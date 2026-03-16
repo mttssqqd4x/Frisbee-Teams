@@ -1,4 +1,4 @@
-First Name,Last Name,Combined,Handling,Cutting,Defense,Win/Loss Rating
-Sam,Schrader,7,7,7,7,0.00
-Chris,Trujillo,6,6,6,6,0.00
-Nathan,Burt,5,5,5,5,0.00
+First Name,Last Name,Handling,Cutting,Defense,Win/Loss
+Sam,Schrader,7,7,7,0.00
+Chris,Trujillo,6,6,6,0.00
+Nathan,Burt,5,5,5,0.00

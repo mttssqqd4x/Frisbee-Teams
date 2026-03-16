@@ -70,16 +70,16 @@
   <div class="card">
     <details id="section-load-edit">
       <summary><span class="summary-title">2) Load or edit players</span><span></span></summary>
-      <div class="notice" style="margin-top:10px">Paste CSV with columns: First Name, Last Name, Combined, Handling, Cutting, Defense, Win/Loss Rating.</div>
+      <div class="notice" style="margin-top:10px">Paste CSV with columns: First Name, Last Name, Handling, Cutting, Defense, Win/Loss.</div>
       <div class="grid grid-2" style="margin-top:10px">
         <div>
           <label>Active ratings CSV</label>
-          <textarea id="activeCsv" placeholder="First Name,Last Name,Combined,Handling,Cutting,Defense,Win/Loss Rating&#10;Sam,Schrader,7,7,7,7,0.00"></textarea>
+          <textarea id="activeCsv" placeholder="First Name,Last Name,Handling,Cutting,Defense,Win/Loss&#10;Sam,Schrader,7,7,7,0.00"></textarea>
           <button class="btn" onclick="importCsv(false)">Import active CSV</button>
         </div>
         <div>
           <label>Inactive ratings CSV</label>
-          <textarea id="inactiveCsv" placeholder="First Name,Last Name,Combined,Handling,Cutting,Defense,Win/Loss Rating&#10;Old,Player,5,5,5,5,0.00"></textarea>
+          <textarea id="inactiveCsv" placeholder="First Name,Last Name,Handling,Cutting,Defense,Win/Loss&#10;Old,Player,5,5,5,0.00"></textarea>
           <button class="btn-secondary" onclick="importCsv(true)">Import inactive CSV</button>
         </div>
       </div>
@@ -89,7 +89,11 @@
           <label>Backup / restore</label>
           <div class="toolbar">
             <button class="btn-secondary" onclick="downloadState()">Export backup JSON</button>
+            <button class="btn-secondary" onclick="downloadRatingsCsv()">Download Ratings CSV</button>
+          </div>
+          <div class="toolbar" style="margin-top:10px">
             <button class="btn-secondary" onclick="document.getElementById('restoreFile').click()">Restore backup JSON</button>
+            <span></span>
           </div>
           <input id="restoreFile" type="file" accept="application/json" style="display:none" onchange="restoreState(event)">
         </div>
@@ -164,7 +168,7 @@
 </div></div>
 
 <script>
-const STORAGE_KEY = "ultimate_teams_pages_v5";
+const STORAGE_KEY = "ultimate_teams_pages_v6";
 const defaultState = {players: [], pairRules: [], history: {}, currentGame: null, nextId: 1, showInactive: false, selectedWinnerIndex: null};
 let state = loadState();
 
@@ -175,7 +179,47 @@ function loadState(){
   }catch(e){ return structuredClone(defaultState); }
 }
 function saveState(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); updateStats(); }
-function downloadState(){ const blob = new Blob([JSON.stringify(state, null, 2)], {type:"application/json"}); const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "ultimate-teams-backup.json"; a.click(); }
+function downloadBlob(filename, content, type){
+  const blob = new Blob([content], {type});
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = filename;
+  a.click();
+}
+function escapeCsv(v){
+  const s = String(v ?? "");
+  if (s.includes(",") || s.includes('"') || s.includes("\n")) return '"' + s.replace(/"/g, '""') + '"';
+  return s;
+}
+function downloadState(){ downloadBlob("ultimate-teams-backup.json", JSON.stringify(state, null, 2), "application/json"); }
+function downloadRatingsCsv(){
+  const headers = ["First Name","Last Name","Handling","Cutting","Defense","Win/Loss"];
+
+  function buildCsv(players){
+    const rows = [headers];
+    players.forEach(p => {
+      rows.push([
+        p.firstName || "",
+        p.lastName || "",
+        Number(p.handling || 0),
+        Number(p.cutting || 0),
+        Number(p.defense || 0),
+        Number(p.winLossRating || 0).toFixed(2)
+      ]);
+    });
+    return rows.map(r => r.map(escapeCsv).join(",")).join("
+");
+  }
+
+  const active = state.players.filter(p => p.active);
+  const inactive = state.players.filter(p => !p.active);
+
+  const activeCsv = buildCsv(active);
+  const inactiveCsv = buildCsv(inactive);
+
+  downloadBlob("active_players.csv", activeCsv, "text/csv");
+  setTimeout(()=>downloadBlob("inactive_players.csv", inactiveCsv, "text/csv"), 200);
+}
 function restoreState(event){ const file = event.target.files[0]; if(!file) return; const reader = new FileReader(); reader.onload = () => { try{ state = JSON.parse(reader.result); if(typeof state.showInactive === "undefined") state.showInactive = false; if(typeof state.selectedWinnerIndex === "undefined") state.selectedWinnerIndex = null; saveState(); renderAll(); alert("Backup restored."); }catch(e){ alert("Could not read backup JSON."); } }; reader.readAsText(file); }
 function normalizeName(name){ return name.trim().replace(/\s+/g," "); }
 function splitName(full){ const parts = normalizeName(full).split(" "); return {first: parts[0] || "", last: parts.slice(1).join(" ")}; }
@@ -218,8 +262,8 @@ function importCsv(inactive){
       handling: Number(row["Handling"] || 0),
       cutting: Number(row["Cutting"] || 0),
       defense: Number(row["Defense"] || 0),
-      combined: Number(row["Combined"] || 0),
-      winLossRating: Number(row["Win/Loss Rating"] || row["WinLossRating"] || 0),
+      combined: 0,
+      winLossRating: Number(row["Win/Loss"] || row["Win/Loss Rating"] || row["WinLossRating"] || 0),
       active: !inactive, attending: false, injuryPct: 1,
       temporary: false, tempTodayOnly: false, copiedFromId: null
     };
@@ -342,7 +386,7 @@ function addTempPlayer(){
   const src = playerById(likeId), parts = splitName(fullName);
   state.players.push({
     id: state.nextId++, fullName, firstName: parts.first, lastName: parts.last,
-    handling: src.handling, cutting: src.cutting, defense: src.defense, combined: src.combined,
+    handling: src.handling, cutting: src.cutting, defense: src.defense, combined: 0,
     winLossRating: Number(src.winLossRating || 0),
     active: true, attending: true, injuryPct: 1, temporary: true, tempTodayOnly: todayOnly, copiedFromId: src.id
   });
