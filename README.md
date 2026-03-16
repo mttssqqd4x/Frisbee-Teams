@@ -1,30 +1,29 @@
-# Ultimate Teams — GitHub Pages package v4
 
-This version implements modified Elo win/loss ratings.
+Ultimate Teams – GitHub Pages package
 
-CSV columns:
-- First Name
-- Last Name
-- Combined
-- Handling
-- Cutting
-- Defense
-- Win/Loss Rating
+CSV format:
+First Name,Last Name,Combined,Handling,Cutting,Defense,Win/Loss Rating
 
-Recommended starting value: 0.00
+Example:
+Sam,Schrader,7,7,7,7,0.00
 
-Modified Elo logic:
-- Player effective overall = weighted base skill + Win/Loss Rating
-- Team strength = sum of effective overall ratings
-- Expected win chance = 1 / (1 + 10^((opp - team) / 4))
-- K factor = 0.08
-- Winners gain: K × (1 - expected)
-- Losers lose: K × expected
+Win/Loss Rating Logic
+---------------------
+Team strength = sum of player overall ratings.
 
-This means:
-- strong team wins -> tiny change
-- weak team wins -> larger change
-- no clamp
-- no decay
+Expected win chance =
+team_strength / (team_strength + opponent_strength)
 
-Result recording is optional. You can still just Generate game or Save teams + next game without touching win/loss ratings.
+K factor = 0.10
+
+Winner change:
++ K × (1 − expected_win_chance)
+
+Loser change:
+− K × expected_loser_chance
+
+Meaning:
+• strong team wins → very small change
+• weak team wins → larger change
+• no clamp
+• no decay
