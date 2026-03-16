@@ -103,6 +103,10 @@
             <button class="btn-danger" onclick="resetHistory()">Reset teammate history</button>
             <button class="btn-secondary" onclick="clearResultsSelection()">Clear winner selection</button>
           </div>
+          <div class="toolbar" style="margin-top:10px">
+            <button class="btn-warn" onclick="resetSeasonStats()">Reset season stats</button>
+            <span></span>
+          </div>
         </div>
       </div>
     </details>
@@ -179,6 +183,13 @@ function loadState(){
   }catch(e){ return structuredClone(defaultState); }
 }
 function saveState(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); updateStats(); }
+function getDatePrefix(){
+  const d = new Date();
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}${m}${day}`;
+}
 function downloadBlob(filename, content, type){
   const blob = new Blob([content], {type});
   const a = document.createElement("a");
@@ -191,7 +202,8 @@ function escapeCsv(v){
   if (s.includes(",") || s.includes('"') || s.includes("\n")) return '"' + s.replace(/"/g, '""') + '"';
   return s;
 }
-function downloadState(){ downloadBlob("ultimate-teams-backup.json", JSON.stringify(state, null, 2), "application/json"); }
+function downloadState(){ downloadBlob(`${getDatePrefix()}_ultimate-teams-backup.json`, JSON.stringify(state, null, 2), "application/json"); }
+
 function downloadRatingsCsv(){
   const headers = ["First Name","Last Name","Handling","Cutting","Defense","Win/Loss"];
 
@@ -207,19 +219,39 @@ function downloadRatingsCsv(){
         Number(p.winLossRating || 0).toFixed(2)
       ]);
     });
-    return rows.map(r => r.map(escapeCsv).join(",")).join("
-");
+    return rows.map(r => r.map(escapeCsv).join(",")).join("\n");
   }
 
-  const active = state.players.filter(p => p.active);
-  const inactive = state.players.filter(p => !p.active);
+  function buildSeasonCsv(players){
+    const rows = [["First Name","Last Name","Games Played","Wins","Losses","Win %","Win/Loss"]];
+    players.forEach(p => {
+      const gp = Number(p.gamesPlayed || 0);
+      const wins = Number(p.wins || 0);
+      const losses = Number(p.losses || 0);
+      const winPct = gp > 0 ? ((wins / gp) * 100).toFixed(1) + "%" : "0.0%";
+      rows.push([
+        p.firstName || "",
+        p.lastName || "",
+        gp,
+        wins,
+        losses,
+        winPct,
+        Number(p.winLossRating || 0).toFixed(2)
+      ]);
+    });
+    return rows.map(r => r.map(escapeCsv).join(",")).join("\n");
+  }
 
-  const activeCsv = buildCsv(active);
-  const inactiveCsv = buildCsv(inactive);
+  const sorted = [...state.players].sort((a,b)=>(a.fullName||"").localeCompare(b.fullName||""));
+  const active = sorted.filter(p => p.active);
+  const inactive = sorted.filter(p => !p.active);
 
-  downloadBlob("active_players.csv", activeCsv, "text/csv");
-  setTimeout(()=>downloadBlob("inactive_players.csv", inactiveCsv, "text/csv"), 200);
+  const prefix = getDatePrefix();
+  downloadBlob(`${prefix}_active_players.csv`, buildCsv(active), "text/csv");
+  setTimeout(() => downloadBlob(`${prefix}_inactive_players.csv`, buildCsv(inactive), "text/csv"), 250);
+  setTimeout(() => downloadBlob(`${prefix}_season_stats.csv`, buildSeasonCsv(sorted), "text/csv"), 500);
 }
+
 function restoreState(event){ const file = event.target.files[0]; if(!file) return; const reader = new FileReader(); reader.onload = () => { try{ state = JSON.parse(reader.result); if(typeof state.showInactive === "undefined") state.showInactive = false; if(typeof state.selectedWinnerIndex === "undefined") state.selectedWinnerIndex = null; saveState(); renderAll(); alert("Backup restored."); }catch(e){ alert("Could not read backup JSON."); } }; reader.readAsText(file); }
 function normalizeName(name){ return name.trim().replace(/\s+/g," "); }
 function splitName(full){ const parts = normalizeName(full).split(" "); return {first: parts[0] || "", last: parts.slice(1).join(" ")}; }
@@ -265,7 +297,7 @@ function importCsv(inactive){
       combined: 0,
       winLossRating: Number(row["Win/Loss"] || row["Win/Loss Rating"] || row["WinLossRating"] || 0),
       active: !inactive, attending: false, injuryPct: 1,
-      temporary: false, tempTodayOnly: false, copiedFromId: null
+      temporary: false, tempTodayOnly: false, copiedFromId: null, gamesPlayed: Number(row["Games Played"] || 0), wins: Number(row["Wins"] || 0), losses: Number(row["Losses"] || 0)
     };
     if(existing) Object.assign(existing, payload, {id: existing.id});
     else { payload.id = state.nextId++; state.players.push(payload); }
@@ -388,7 +420,7 @@ function addTempPlayer(){
     id: state.nextId++, fullName, firstName: parts.first, lastName: parts.last,
     handling: src.handling, cutting: src.cutting, defense: src.defense, combined: 0,
     winLossRating: Number(src.winLossRating || 0),
-    active: true, attending: true, injuryPct: 1, temporary: true, tempTodayOnly: todayOnly, copiedFromId: src.id
+    active: true, attending: true, injuryPct: 1, temporary: true, tempTodayOnly: todayOnly, copiedFromId: src.id, gamesPlayed: 0, wins: 0, losses: 0
   });
   saveState(); renderAll(); document.getElementById("tempName").value = "";
 }
@@ -396,6 +428,16 @@ function removePlayer(id){ state.players = state.players.filter(p => p.id !== id
 function addPairRule(){ const p1 = Number(document.getElementById("pairP1").value), p2 = Number(document.getElementById("pairP2").value), type = document.getElementById("pairType").value, strength = Number(document.getElementById("pairStrength").value || 1); if(!p1 || !p2 || p1 === p2){ alert("Choose two different present players."); return; } state.pairRules.push({player1Id: p1, player2Id: p2, type, strength}); saveState(); renderAll(); }
 function removePairRule(idx){ state.pairRules.splice(idx, 1); saveState(); renderAll(); }
 function clearPairRules(){ state.pairRules = []; saveState(); renderAll(); }
+function resetSeasonStats(){
+  if(!confirm("Reset season stats? This clears Games Played, Wins, and Losses but keeps ratings and roster data.")) return;
+  state.players.forEach(p => {
+    p.gamesPlayed = 0;
+    p.wins = 0;
+    p.losses = 0;
+  });
+  saveState();
+  renderAll();
+}
 function resetHistory(){ if(!confirm("Reset teammate history?")) return; state.history = {}; saveState(); renderAll(); }
 function activeAttendingPlayers(){ return state.players.filter(p => p.active && p.attending); }
 function teamStats(team){ return {handling: team.reduce((s,p)=>s+effectiveHandling(p),0), cutting: team.reduce((s,p)=>s+effectiveCutting(p),0), defense: team.reduce((s,p)=>s+effectiveDefense(p),0), overall: team.reduce((s,p)=>s+overall(p),0), count: team.length}; }
@@ -470,6 +512,8 @@ function generateGame(){
 }
 function applyResult(winnerIndex){
   if(!state.currentGame) return;
+  const winnerIds = new Set(state.currentGame.teams[winnerIndex].map(p => p.id));
+
   state.currentGame.teams.forEach((team, idx) => {
     if(idx === winnerIndex) return;
     const winnerTeam = state.currentGame.teams[winnerIndex];
@@ -488,6 +532,18 @@ function applyResult(winnerIndex){
       if(player) player.winLossRating = Number(player.winLossRating || 0) + K * (0 - expectedLoser);
     });
   });
+
+  // Season stats: one game recorded for every team in the current game
+  state.currentGame.teams.forEach((team, idx) => {
+    team.forEach(p => {
+      const player = playerById(p.id);
+      if(!player) return;
+      player.gamesPlayed = Number(player.gamesPlayed || 0) + 1;
+      if(idx === winnerIndex) player.wins = Number(player.wins || 0) + 1;
+      else player.losses = Number(player.losses || 0) + 1;
+    });
+  });
+
   saveState();
   renderAll();
   document.getElementById("resultMessage").textContent = `Saved results for Team ${winnerIndex + 1}.`;
