@@ -1,25 +1,30 @@
-# Ultimate Teams Offline — GitHub Pages package
+# Ultimate Teams — GitHub Pages package v4
 
-This package is ready to publish to GitHub Pages.
+This version implements modified Elo win/loss ratings.
 
-## Files
-- `index.html` — the app
-- `manifest.json` — PWA manifest
-- `service-worker.js` — offline caching
-- `.github/workflows/deploy-pages.yml` — GitHub Pages deployment workflow
+CSV columns:
+- First Name
+- Last Name
+- Combined
+- Handling
+- Cutting
+- Defense
+- Win/Loss Rating
 
-## Publish steps
-1. Create a new GitHub repository.
-2. Upload all files from this folder to the repository root.
-3. Commit to the `main` branch.
-4. In GitHub, go to **Settings → Pages**.
-5. Under **Build and deployment**, set **Source** to **GitHub Actions**.
-6. Go to **Actions** and let the workflow run.
-7. Open the Pages URL once on your phone while online.
-8. In Safari, tap **Share → Add to Home Screen**.
-9. Open the installed app once online to finish caching.
-10. Then test offline.
+Recommended starting value: 0.00
 
-## Notes
-- The app stores league data in browser storage on the device.
-- Use the built-in JSON backup export regularly.
+Modified Elo logic:
+- Player effective overall = weighted base skill + Win/Loss Rating
+- Team strength = sum of effective overall ratings
+- Expected win chance = 1 / (1 + 10^((opp - team) / 4))
+- K factor = 0.08
+- Winners gain: K × (1 - expected)
+- Losers lose: K × expected
+
+This means:
+- strong team wins -> tiny change
+- weak team wins -> larger change
+- no clamp
+- no decay
+
+Result recording is optional. You can still just Generate game or Save teams + next game without touching win/loss ratings.

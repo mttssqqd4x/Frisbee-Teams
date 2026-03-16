@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <title>Ultimate Teams Offline</title>
+  <title>Ultimate Teams</title>
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#000000">
   <style>
@@ -21,44 +21,31 @@
     @media (max-width:700px){.grid-2,.grid-3,.grid-4{grid-template-columns:1fr}}
     label{display:block;font-size:.9rem;color:var(--muted);margin:0 0 6px}
     input,select,button,textarea{width:100%;border-radius:12px;border:1px solid var(--border);padding:12px;font-size:16px;background:var(--card2);color:var(--text)}
-    textarea{min-height:120px}
-    button{font-weight:700;cursor:pointer}
+    textarea{min-height:120px} button{font-weight:700;cursor:pointer}
     .btn{background:var(--accent2);border-color:transparent}.btn-secondary{background:var(--card2)}.btn-success{background:var(--accent);color:#04120a;border-color:transparent}.btn-danger{background:var(--danger);border-color:transparent}.btn-warn{background:var(--warn);color:#1f1301;border-color:transparent}
-    .toolbar{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
-    .row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+    .toolbar{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
     .chip{display:inline-flex;align-items:center;gap:8px;padding:8px 10px;border-radius:999px;background:var(--card2);border:1px solid var(--border);font-size:.9rem}
-    .pill{padding:4px 8px;border-radius:999px;background:#0b0b0b;border:1px solid var(--border);font-size:.8rem;color:var(--muted)}
-    .list{display:grid;gap:6px}
-    .player{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center;background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:10px}
-    .player.compact{padding:8px 10px}
-    .player-name{font-weight:700}
-    .clickable{cursor:pointer;user-select:none;-webkit-tap-highlight-color: transparent}
-    .attend-on{outline:2px solid var(--accent);background:#071308}
-    .inactive{opacity:.7}
-    .temp{border-color:#8b5cf6}
-    .teambox{background:var(--card2);border:1px solid var(--border);border-radius:14px;padding:10px}
-    .teamhead{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
-    .stickybar{
-      position:fixed;left:0;right:0;bottom:0;background:rgba(0,0,0,.97);border-top:1px solid var(--border);
-      padding:10px 12px calc(10px + env(safe-area-inset-bottom));backdrop-filter: blur(10px);
-    }
+    .list{display:grid;gap:6px}.player{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center;background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:8px 10px}
+    .player-name{font-weight:700}.clickable{cursor:pointer;user-select:none;-webkit-tap-highlight-color: transparent}
+    .attend-on{outline:2px solid var(--accent);background:#071308}.inactive{opacity:.7}.temp{border-color:#8b5cf6}
+    .toggle-wrap{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}.toggle-wrap button{width:auto;padding:8px 10px;font-size:.88rem}
+    .teambox{background:var(--card2);border:1px solid var(--border);border-radius:14px;padding:10px}.teamhead{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+    .stickybar{position:fixed;left:0;right:0;bottom:0;background:rgba(0,0,0,.97);border-top:1px solid var(--border);padding:10px 12px calc(10px + env(safe-area-inset-bottom));backdrop-filter:blur(10px)}
     .stickybar .inner{max-width:900px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
     .section-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.hr{height:1px;background:var(--border);margin:10px 0}
-    details{border-radius:12px}
     details > summary{list-style:none;cursor:pointer;display:flex;justify-content:space-between;align-items:center;padding:0;margin:0}
-    details > summary::-webkit-details-marker{display:none}
-    .summary-title{font-size:1.1rem;font-weight:700}
-    .present-list{display:grid;gap:4px}
-    .present-row{padding:6px 8px;border:1px solid var(--border);border-radius:10px;background:var(--card2);display:flex;justify-content:space-between;gap:8px;align-items:center}
-    .present-name{font-weight:600;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-    .present-meta{font-size:.78rem;color:var(--muted);white-space:nowrap}
-    .muted-inline{color:var(--muted);font-size:.9rem}
+    details > summary::-webkit-details-marker{display:none}.summary-title{font-size:1.1rem;font-weight:700}
+    .present-list{display:grid;gap:4px}.present-row{padding:6px 8px;border:1px solid var(--border);border-radius:10px;background:var(--card2);display:flex;justify-content:space-between;gap:8px;align-items:center}
+    .present-name{font-weight:600;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.present-meta{font-size:.78rem;color:var(--muted);white-space:nowrap}.muted-inline{color:var(--muted);font-size:.9rem}
+    .winner-btn{border-color:#14532d;background:#052e16;color:#d1fae5}
+    .loser-btn{border-color:#7f1d1d;background:#450a0a;color:#fecaca}
+    .info-box{border:1px solid var(--border);border-radius:12px;background:var(--card2);padding:10px}
   </style>
 </head>
 <body>
 <div class="app">
   <div class="card">
-    <h1>Ultimate Teams Offline</h1>
+    <h1>Ultimate Teams</h1>
     <div class="row">
       <span class="chip">Players: <strong id="statPlayers">0</strong></span>
       <span class="chip">Attending: <strong id="statAttending">0</strong></span>
@@ -70,22 +57,33 @@
     <details id="section-current-game" open>
       <summary><span class="summary-title">1) Current game</span><span class="muted-inline">teams</span></summary>
       <div id="teamsOutput" style="margin-top:10px"></div>
+      <div class="hr"></div>
+      <div class="notice">Optional: record winners and losers to update modified Elo ratings. You can ignore this and just generate the next game normally.</div>
+      <div class="grid grid-2" style="margin-top:10px">
+        <button class="winner-btn" onclick="recordResult('win')">Record winning team</button>
+        <button class="loser-btn" onclick="recordResult('loss')">Record losing team</button>
+      </div>
+      <div class="grid grid-2" style="margin-top:10px">
+        <div><label>Winning team</label><select id="winTeamSelect"></select></div>
+        <div><label>Losing team</label><select id="lossTeamSelect"></select></div>
+      </div>
+      <div id="resultMessage" class="small" style="margin-top:8px"></div>
     </details>
   </div>
 
   <div class="card">
     <details id="section-load-edit">
       <summary><span class="summary-title">2) Load or edit players</span><span></span></summary>
-      <div class="notice" style="margin-top:10px">Paste CSV with columns: First Name, Last Name, Combined, Handling, Cutting, Defense.</div>
+      <div class="notice" style="margin-top:10px">Paste CSV with columns: First Name, Last Name, Combined, Handling, Cutting, Defense, Win/Loss Rating.</div>
       <div class="grid grid-2" style="margin-top:10px">
         <div>
           <label>Active ratings CSV</label>
-          <textarea id="activeCsv" placeholder="First Name,Last Name,Combined,Handling,Cutting,Defense&#10;Sam,Schrader,7,7,7,7"></textarea>
+          <textarea id="activeCsv" placeholder="First Name,Last Name,Combined,Handling,Cutting,Defense,Win/Loss Rating&#10;Sam,Schrader,7,7,7,7,0.00"></textarea>
           <button class="btn" onclick="importCsv(false)">Import active CSV</button>
         </div>
         <div>
           <label>Inactive ratings CSV</label>
-          <textarea id="inactiveCsv" placeholder="First Name,Last Name,Combined,Handling,Cutting,Defense&#10;Old,Player,5,5,5,5"></textarea>
+          <textarea id="inactiveCsv" placeholder="First Name,Last Name,Combined,Handling,Cutting,Defense,Win/Loss Rating&#10;Old,Player,5,5,5,5,0.00"></textarea>
           <button class="btn-secondary" onclick="importCsv(true)">Import inactive CSV</button>
         </div>
       </div>
@@ -158,6 +156,20 @@
       <div id="playerList" class="list" style="margin-top:10px"></div>
     </details>
   </div>
+
+  <div class="card">
+    <details>
+      <summary><span class="summary-title">6) Modified Elo notes</span><span></span></summary>
+      <div class="info-box" style="margin-top:10px">
+        <div class="small">Each player's overall used for team building is:</div>
+        <div><code>base overall + Win/Loss Rating</code></div>
+        <div class="small" style="margin-top:8px">Expected win chance is logistic:</div>
+        <div><code>1 / (1 + 10^((opp - team) / 4))</code></div>
+        <div class="small" style="margin-top:8px">Rating update per player on the team:</div>
+        <div><code>K × (actual - expected)</code>, with <code>K = 0.08</code></div>
+      </div>
+    </details>
+  </div>
 </div>
 
 <div class="stickybar"><div class="inner">
@@ -167,11 +179,16 @@
 </div></div>
 
 <script>
-const STORAGE_KEY = "ultimate_offline_app_v7";
+const STORAGE_KEY = "ultimate_teams_pages_v4";
 const defaultState = {players: [], pairRules: [], history: {}, currentGame: null, nextId: 1, showInactive: false};
 let state = loadState();
 
-function loadState(){ try{ const raw = localStorage.getItem(STORAGE_KEY); return raw ? Object.assign(structuredClone(defaultState), JSON.parse(raw)) : structuredClone(defaultState);}catch(e){ return structuredClone(defaultState);} }
+function loadState(){
+  try{
+    const raw = localStorage.getItem(STORAGE_KEY);
+    return raw ? Object.assign(structuredClone(defaultState), JSON.parse(raw)) : structuredClone(defaultState);
+  }catch(e){ return structuredClone(defaultState); }
+}
 function saveState(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); updateStats(); }
 function downloadState(){ const blob = new Blob([JSON.stringify(state, null, 2)], {type:"application/json"}); const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "ultimate-teams-backup.json"; a.click(); }
 function restoreState(event){ const file = event.target.files[0]; if(!file) return; const reader = new FileReader(); reader.onload = () => { try{ state = JSON.parse(reader.result); if(typeof state.showInactive === "undefined") state.showInactive = false; saveState(); renderAll(); alert("Backup restored."); }catch(e){ alert("Could not read backup JSON."); } }; reader.readAsText(file); }
@@ -182,24 +199,55 @@ function presentPlayers(){ return [...state.players].filter(p => p.active && p.a
 function effectiveHandling(player){ const inj = Number(player.injuryPct)||1; return (Number(player.handling)||0) * (0.5 + 0.5*inj); }
 function effectiveCutting(player){ const inj = Number(player.injuryPct)||1; return (Number(player.cutting)||0) * inj; }
 function effectiveDefense(player){ const inj = Number(player.injuryPct)||1; return (Number(player.defense)||0) * inj; }
-function overall(player){ return effectiveHandling(player)*0.35 + effectiveCutting(player)*0.35 + effectiveDefense(player)*0.30; }
+function baseOverall(player){ return effectiveHandling(player)*0.35 + effectiveCutting(player)*0.35 + effectiveDefense(player)*0.30; }
+function overall(player){ return baseOverall(player) + Number(player.winLossRating || 0); }
+function expectedWinProb(teamStrength, oppStrength){
+  const SCALE = 4.0;
+  return 1 / (1 + Math.pow(10, ((oppStrength - teamStrength) / SCALE)));
+}
 function pairKey(a,b){ return a < b ? `${a}|${b}` : `${b}|${a}`; }
-function parseCsv(text){ const lines = text.trim().split(/\r?\n/).filter(Boolean); if(lines.length < 2) return []; const headers = lines[0].split(",").map(h => h.trim()); return lines.slice(1).map(line => { const cols = line.split(","); const obj = {}; headers.forEach((h, i) => obj[h] = (cols[i] ?? "").trim()); return obj; }); }
+function parseCsv(text){
+  const lines = text.trim().split(/\r?\n/).filter(Boolean);
+  if(lines.length < 2) return [];
+  const headers = lines[0].split(",").map(h => h.trim());
+  return lines.slice(1).map(line => {
+    const cols = line.split(",");
+    const obj = {};
+    headers.forEach((h, i) => obj[h] = (cols[i] ?? "").trim());
+    return obj;
+  });
+}
 function importCsv(inactive){
   const id = inactive ? "inactiveCsv" : "activeCsv";
   const text = document.getElementById(id).value.trim();
   if(!text){ alert("Paste CSV first."); return; }
   const rows = parseCsv(text);
   rows.forEach(row => {
-    const first = (row["First Name"] || "").trim(), last = (row["Last Name"] || "").trim(), full = normalizeName(`${first} ${last}`);
+    const first = (row["First Name"] || "").trim();
+    const last = (row["Last Name"] || "").trim();
+    const full = normalizeName(`${first} ${last}`);
     if(!full) return;
     const existing = state.players.find(p => p.fullName.toLowerCase() === full.toLowerCase());
-    const payload = {fullName: full, firstName: first, lastName: last, handling: Number(row["Handling"] || 0), cutting: Number(row["Cutting"] || 0), defense: Number(row["Defense"] || 0), combined: Number(row["Combined"] || 0), active: !inactive, attending: false, injuryPct: 1, temporary: false, tempTodayOnly: false, copiedFromId: null};
-    if(existing) Object.assign(existing, payload, {id: existing.id}); else { payload.id = state.nextId++; state.players.push(payload); }
+    const payload = {
+      fullName: full, firstName: first, lastName: last,
+      handling: Number(row["Handling"] || 0),
+      cutting: Number(row["Cutting"] || 0),
+      defense: Number(row["Defense"] || 0),
+      combined: Number(row["Combined"] || 0),
+      winLossRating: Number(row["Win/Loss Rating"] || row["WinLossRating"] || 0),
+      active: !inactive, attending: false, injuryPct: 1,
+      temporary: false, tempTodayOnly: false, copiedFromId: null
+    };
+    if(existing) Object.assign(existing, payload, {id: existing.id});
+    else { payload.id = state.nextId++; state.players.push(payload); }
   });
   saveState(); renderAll(); alert(`Imported ${rows.length} rows.`);
 }
-function updateStats(){ document.getElementById("statPlayers").textContent = state.players.length; document.getElementById("statAttending").textContent = state.players.filter(p => p.attending && p.active).length; document.getElementById("statHistory").textContent = Object.keys(state.history).length; }
+function updateStats(){
+  document.getElementById("statPlayers").textContent = state.players.length;
+  document.getElementById("statAttending").textContent = state.players.filter(p => p.attending && p.active).length;
+  document.getElementById("statHistory").textContent = Object.keys(state.history).length;
+}
 function updateSelectOptions(){
   const allPlayers = [...state.players].sort((a,b)=>a.fullName.localeCompare(b.fullName));
   const present = presentPlayers();
@@ -207,7 +255,26 @@ function updateSelectOptions(){
   Object.keys(map).forEach(id => {
     const sel = document.getElementById(id), current = sel.value;
     sel.innerHTML = '<option value="">Select...</option>';
-    map[id].forEach(p => { const opt = document.createElement("option"); opt.value = p.id; opt.textContent = p.fullName; sel.appendChild(opt); });
+    map[id].forEach(p => {
+      const opt = document.createElement("option");
+      opt.value = p.id; opt.textContent = p.fullName;
+      sel.appendChild(opt);
+    });
+    sel.value = current;
+  });
+
+  const winSel = document.getElementById("winTeamSelect");
+  const lossSel = document.getElementById("lossTeamSelect");
+  [winSel, lossSel].forEach(sel => {
+    const current = sel.value;
+    sel.innerHTML = '<option value="">Select...</option>';
+    if(state.currentGame){
+      state.currentGame.teams.forEach((team, idx) => {
+        const opt = document.createElement("option");
+        opt.value = idx; opt.textContent = `Team ${idx+1}`;
+        sel.appendChild(opt);
+      });
+    }
     sel.value = current;
   });
 }
@@ -217,57 +284,61 @@ function renderPresentList(){
   box.innerHTML = "";
   const present = presentPlayers();
   count.textContent = String(present.length);
-  if(!present.length){
-    box.innerHTML = '<div class="small">No players marked present.</div>';
-    return;
-  }
+  if(!present.length){ box.innerHTML = '<div class="small">No players marked present.</div>'; return; }
   present.forEach(p => {
     const el = document.createElement("div");
     el.className = "present-row";
-    el.innerHTML = `<span class="present-name">${p.fullName}</span><span class="present-meta">H ${Number(p.handling).toFixed(1)} · C ${Number(p.cutting).toFixed(1)} · D ${Number(p.defense).toFixed(1)} · ${(Number(p.injuryPct)*100).toFixed(0)}%</span>`;
+    el.innerHTML = `<span class="present-name">${p.fullName}</span><span class="present-meta">H ${Number(p.handling).toFixed(1)} · C ${Number(p.cutting).toFixed(1)} · D ${Number(p.defense).toFixed(1)} · ${(Number(p.injuryPct)*100).toFixed(0)}% · W/L ${Number(p.winLossRating||0).toFixed(2)}</span>`;
     box.appendChild(el);
   });
 }
 function renderPairRules(){
-  const box = document.getElementById("pairRuleList"); box.innerHTML = "";
+  const box = document.getElementById("pairRuleList");
+  box.innerHTML = "";
   if(!state.pairRules.length){ box.innerHTML = '<div class="small">No pair rules yet.</div>'; return; }
-  state.pairRules.forEach((r, idx) => { const p1 = playerById(r.player1Id), p2 = playerById(r.player2Id); const div = document.createElement("div"); div.className = "player compact"; div.innerHTML = `<div><div class="player-name">${p1?.fullName || "Unknown"} ↔ ${p2?.fullName || "Unknown"}</div></div><div class="toggle-wrap"><button class="btn-danger" onclick="removePairRule(${idx})">Remove</button></div>`; box.appendChild(div); });
+  state.pairRules.forEach((r, idx) => {
+    const p1 = playerById(r.player1Id), p2 = playerById(r.player2Id);
+    const div = document.createElement("div");
+    div.className = "player";
+    div.innerHTML = `<div><div class="player-name">${p1?.fullName || "Unknown"} ↔ ${p2?.fullName || "Unknown"}</div></div><div class="toggle-wrap"><button class="btn-danger" onclick="removePairRule(${idx})">Remove</button></div>`;
+    box.appendChild(div);
+  });
 }
 function renderPlayers(){
-  const list = document.getElementById("playerList"); list.innerHTML = "";
+  const list = document.getElementById("playerList");
+  list.innerHTML = "";
   const search = (document.getElementById("playerSearch")?.value || "").trim().toLowerCase();
   const filtered = [...state.players]
     .filter(p => state.showInactive || p.active)
     .filter(p => !search || p.fullName.toLowerCase().includes(search))
     .sort((a,b)=>a.fullName.localeCompare(b.fullName));
 
-  if(!filtered.length){
-    list.innerHTML = '<div class="small">No players match that search.</div>';
-    return;
-  }
+  if(!filtered.length){ list.innerHTML = '<div class="small">No players match that search.</div>'; return; }
 
   filtered.forEach(p => {
     const cloneName = p.copiedFromId ? playerById(p.copiedFromId)?.fullName : null;
     const div = document.createElement("div");
-    div.className = "player compact clickable" + (p.attending && p.active ? " attend-on" : "") + (!p.active ? " inactive" : "") + (p.temporary ? " temp" : "");
-    div.onclick = (e) => {
-      if (e.target.closest('button')) return;
-      toggleAttendance(p.id);
-    };
-    div.innerHTML = `<div><div class="player-name">${p.fullName}</div><div class="small">${p.active ? 'active' : 'inactive'} · injury ${(Number(p.injuryPct)*100).toFixed(0)}%${cloneName ? ` · like ${cloneName}` : ''}${p.temporary ? ' · temp' : ''}</div></div><div class="toggle-wrap"><button onclick="event.stopPropagation(); toggleActive(${p.id})">${p.active ? 'Inactive' : 'Active'}</button><button onclick="event.stopPropagation(); setInjuryPrompt(${p.id})">Injury %</button>${p.temporary ? `<button class="btn-danger" onclick="event.stopPropagation(); removePlayer(${p.id})">Remove</button>` : ''}</div>`;
+    div.className = "player clickable" + (p.attending && p.active ? " attend-on" : "") + (!p.active ? " inactive" : "") + (p.temporary ? " temp" : "");
+    div.onclick = (e) => { if (e.target.closest('button')) return; toggleAttendance(p.id); };
+    div.innerHTML = `<div><div class="player-name">${p.fullName}</div><div class="small">${p.active ? 'active' : 'inactive'} · injury ${(Number(p.injuryPct)*100).toFixed(0)}% · W/L ${Number(p.winLossRating||0).toFixed(2)}${cloneName ? ` · like ${cloneName}` : ''}${p.temporary ? ' · temp' : ''}</div></div><div class="toggle-wrap"><button onclick="event.stopPropagation(); toggleActive(${p.id})">${p.active ? 'Inactive' : 'Active'}</button><button onclick="event.stopPropagation(); setInjuryPrompt(${p.id})">Injury %</button>${p.temporary ? `<button class="btn-danger" onclick="event.stopPropagation(); removePlayer(${p.id})">Remove</button>` : ''}</div>`;
     list.appendChild(div);
   });
 }
 function renderTeams(){
-  const out = document.getElementById("teamsOutput"); out.innerHTML = "";
-  if(!state.currentGame){ out.innerHTML = '<div class="small">No game generated yet.</div>'; return; }
-  const wrap = document.createElement("div"); wrap.className = "grid grid-3";
+  const out = document.getElementById("teamsOutput");
+  out.innerHTML = "";
+  document.getElementById("resultMessage").textContent = "";
+  if(!state.currentGame){ out.innerHTML = '<div class="small">No game generated yet.</div>'; updateSelectOptions(); return; }
+  const wrap = document.createElement("div");
+  wrap.className = "grid grid-3";
   state.currentGame.teams.forEach((team, idx) => {
-    const stats = teamStats(team), box = document.createElement("div"); box.className = "teambox";
+    const stats = teamStats(team), box = document.createElement("div");
+    box.className = "teambox";
     box.innerHTML = `<div class="teamhead"><strong>Team ${idx+1}</strong><span class="small">${stats.overall.toFixed(2)}</span></div><div class="small">H ${stats.handling.toFixed(1)} · C ${stats.cutting.toFixed(1)} · D ${stats.defense.toFixed(1)}</div><div class="hr"></div>${team.map(p => `<div class="row" style="justify-content:space-between"><span>${p.fullName}</span><span class="small">${overall(p).toFixed(2)}</span></div>`).join("")}`;
     wrap.appendChild(box);
   });
   out.appendChild(wrap);
+  updateSelectOptions();
 }
 function toggleShowInactive(){ state.showInactive = !state.showInactive; saveState(); updateShowInactiveButton(); renderPlayers(); }
 function updateShowInactiveButton(){ const btn = document.getElementById("toggleInactiveBtn"); btn.textContent = state.showInactive ? "Hide inactive players" : "Show inactive players"; }
@@ -277,7 +348,21 @@ function clearAttendance(){ state.players.forEach(p => p.attending = false); sav
 function toggleAttendance(id){ const p = playerById(id); if(!p) return; if(!p.active) p.active = true; p.attending = !p.attending; saveState(); renderAll(); }
 function toggleActive(id){ const p = playerById(id); if(!p) return; p.active = !p.active; if(!p.active) p.attending = false; saveState(); renderAll(); }
 function setInjuryPrompt(id){ const p = playerById(id); if(!p) return; const current = Math.round((p.injuryPct || 1) * 100); const resp = prompt(`Injury percentage for ${p.fullName} (100 = full strength):`, current); if(resp === null) return; let num = Number(resp); if(Number.isNaN(num) || num <= 0){ alert("Enter a number above 0."); return; } p.injuryPct = num > 1 ? num / 100 : num; saveState(); renderAll(); }
-function addTempPlayer(){ const fullName = normalizeName(document.getElementById("tempName").value); const likeId = Number(document.getElementById("tempLike").value); const todayOnly = document.getElementById("tempTodayOnly").value === "true"; if(!fullName || !likeId){ alert("Enter a name and choose a player to copy."); return; } if(state.players.some(p => p.fullName.toLowerCase() === fullName.toLowerCase())){ alert("That player already exists."); return; } const src = playerById(likeId), parts = splitName(fullName); state.players.push({id: state.nextId++, fullName, firstName: parts.first, lastName: parts.last, handling: src.handling, cutting: src.cutting, defense: src.defense, combined: src.combined, active: true, attending: true, injuryPct: 1, temporary: true, tempTodayOnly: todayOnly, copiedFromId: src.id}); saveState(); renderAll(); document.getElementById("tempName").value = ""; }
+function addTempPlayer(){
+  const fullName = normalizeName(document.getElementById("tempName").value);
+  const likeId = Number(document.getElementById("tempLike").value);
+  const todayOnly = document.getElementById("tempTodayOnly").value === "true";
+  if(!fullName || !likeId){ alert("Enter a name and choose a player to copy."); return; }
+  if(state.players.some(p => p.fullName.toLowerCase() === fullName.toLowerCase())){ alert("That player already exists."); return; }
+  const src = playerById(likeId), parts = splitName(fullName);
+  state.players.push({
+    id: state.nextId++, fullName, firstName: parts.first, lastName: parts.last,
+    handling: src.handling, cutting: src.cutting, defense: src.defense, combined: src.combined,
+    winLossRating: Number(src.winLossRating || 0),
+    active: true, attending: true, injuryPct: 1, temporary: true, tempTodayOnly: todayOnly, copiedFromId: src.id
+  });
+  saveState(); renderAll(); document.getElementById("tempName").value = "";
+}
 function removePlayer(id){ state.players = state.players.filter(p => p.id !== id); state.pairRules = state.pairRules.filter(r => r.player1Id !== id && r.player2Id !== id); Object.keys(state.history).forEach(k => { const [a,b] = k.split("|").map(Number); if(a === id || b === id) delete state.history[k]; }); saveState(); renderAll(); }
 function addPairRule(){ const p1 = Number(document.getElementById("pairP1").value), p2 = Number(document.getElementById("pairP2").value), type = document.getElementById("pairType").value, strength = Number(document.getElementById("pairStrength").value || 1); if(!p1 || !p2 || p1 === p2){ alert("Choose two different present players."); return; } state.pairRules.push({player1Id: p1, player2Id: p2, type, strength}); saveState(); renderAll(); }
 function removePairRule(idx){ state.pairRules.splice(idx, 1); saveState(); renderAll(); }
@@ -285,6 +370,7 @@ function clearPairRules(){ state.pairRules = []; saveState(); renderAll(); }
 function resetHistory(){ if(!confirm("Reset teammate history?")) return; state.history = {}; saveState(); renderAll(); }
 function activeAttendingPlayers(){ return state.players.filter(p => p.active && p.attending); }
 function teamStats(team){ return {handling: team.reduce((s,p)=>s+effectiveHandling(p),0), cutting: team.reduce((s,p)=>s+effectiveCutting(p),0), defense: team.reduce((s,p)=>s+effectiveDefense(p),0), overall: team.reduce((s,p)=>s+overall(p),0), count: team.length}; }
+function teamStrength(team){ return team.reduce((s,p)=>s+overall(p),0); }
 function spread(values){ const mean = values.reduce((a,b)=>a+b,0) / values.length; return values.reduce((s,v)=>s + Math.pow(v - mean, 2), 0); }
 function scoreTeams(teams, repeatWeight){
   const stats = teams.map(teamStats); let score = 0;
@@ -350,6 +436,47 @@ function generateGame(){
   }
   state.currentGame = best; saveState(); renderTeams();
 }
+function applyResult(winnerIndex, loserIndex){
+  if(!state.currentGame) return;
+  const winnerTeam = state.currentGame.teams[winnerIndex];
+  const loserTeam = state.currentGame.teams[loserIndex];
+  const winnerStrength = teamStrength(winnerTeam);
+  const loserStrength = teamStrength(loserTeam);
+  const expectedWinner = expectedWinProb(winnerStrength, loserStrength);
+  const expectedLoser = expectedWinProb(loserStrength, winnerStrength);
+  const K = 0.08;
+
+  winnerTeam.forEach(p => {
+    const player = playerById(p.id);
+    if(player) player.winLossRating = Number(player.winLossRating || 0) + K * (1 - expectedWinner);
+  });
+  loserTeam.forEach(p => {
+    const player = playerById(p.id);
+    if(player) player.winLossRating = Number(player.winLossRating || 0) + K * (0 - expectedLoser);
+  });
+
+  saveState();
+  renderAll();
+  document.getElementById("resultMessage").textContent =
+    `Recorded result. Expected winner chance was ${(expectedWinner*100).toFixed(1)}%. Upsets change ratings more than expected results.`;
+}
+function recordResult(kind){
+  if(!state.currentGame){ alert("Generate a game first."); return; }
+  const winIdx = document.getElementById("winTeamSelect").value;
+  const lossIdx = document.getElementById("lossTeamSelect").value;
+
+  if(kind === 'win'){
+    if(winIdx === "") { alert("Select the winning team."); return; }
+    if(state.currentGame.teams.length !== 2 && lossIdx === "") { alert("For 3+ teams, also select the losing team."); return; }
+    const loser = lossIdx === "" ? (Number(winIdx) === 0 ? 1 : 0) : Number(lossIdx);
+    applyResult(Number(winIdx), loser);
+  } else {
+    if(lossIdx === "") { alert("Select the losing team."); return; }
+    if(state.currentGame.teams.length !== 2 && winIdx === "") { alert("For 3+ teams, also select the winning team."); return; }
+    const winner = winIdx === "" ? (Number(lossIdx) === 0 ? 1 : 0) : Number(winIdx);
+    applyResult(winner, Number(lossIdx));
+  }
+}
 function saveCurrentGame(){
   if(!state.currentGame){ alert("Generate a game first."); return; }
   state.currentGame.teams.forEach(team => {
@@ -362,7 +489,6 @@ function saveCurrentGame(){
   });
   state.currentGame = null; saveState(); renderAll(); generateGame(); alert("Saved history and generated next game.");
 }
-if ("serviceWorker" in navigator) window.addEventListener("load", () => navigator.serviceWorker.register("./service-worker.js").catch(()=>{}));
 renderAll();
 </script>
 </body></html>
