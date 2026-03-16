@@ -10,6 +10,7 @@
     :root{
       --bg:#000000;--card:#080808;--card2:#111111;--text:#f5f5f5;--muted:#9ca3af;
       --accent:#22c55e;--accent2:#2563eb;--danger:#ef4444;--warn:#f59e0b;--border:#1f1f1f;
+      --losebg:#450a0a;--loseborder:#7f1d1d;--winbg:#052e16;--winborder:#14532d;
     }
     *{box-sizing:border-box}
     body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--text)}
@@ -30,6 +31,9 @@
     .attend-on{outline:2px solid var(--accent);background:#071308}.inactive{opacity:.7}.temp{border-color:#8b5cf6}
     .toggle-wrap{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}.toggle-wrap button{width:auto;padding:8px 10px;font-size:.88rem}
     .teambox{background:var(--card2);border:1px solid var(--border);border-radius:14px;padding:10px}.teamhead{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+    .team-clickable{cursor:pointer;user-select:none;-webkit-tap-highlight-color: transparent}
+    .team-win{outline:2px solid var(--accent);background:var(--winbg);border-color:var(--winborder)}
+    .team-loss{outline:2px solid var(--danger);background:var(--losebg);border-color:var(--loseborder)}
     .stickybar{position:fixed;left:0;right:0;bottom:0;background:rgba(0,0,0,.97);border-top:1px solid var(--border);padding:10px 12px calc(10px + env(safe-area-inset-bottom));backdrop-filter:blur(10px)}
     .stickybar .inner{max-width:900px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
     .section-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.hr{height:1px;background:var(--border);margin:10px 0}
@@ -37,9 +41,6 @@
     details > summary::-webkit-details-marker{display:none}.summary-title{font-size:1.1rem;font-weight:700}
     .present-list{display:grid;gap:4px}.present-row{padding:6px 8px;border:1px solid var(--border);border-radius:10px;background:var(--card2);display:flex;justify-content:space-between;gap:8px;align-items:center}
     .present-name{font-weight:600;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.present-meta{font-size:.78rem;color:var(--muted);white-space:nowrap}.muted-inline{color:var(--muted);font-size:.9rem}
-    .winner-btn{border-color:#14532d;background:#052e16;color:#d1fae5}
-    .loser-btn{border-color:#7f1d1d;background:#450a0a;color:#fecaca}
-    .info-box{border:1px solid var(--border);border-radius:12px;background:var(--card2);padding:10px}
   </style>
 </head>
 <body>
@@ -58,14 +59,9 @@
       <summary><span class="summary-title">1) Current game</span><span class="muted-inline">teams</span></summary>
       <div id="teamsOutput" style="margin-top:10px"></div>
       <div class="hr"></div>
-      <div class="notice">Optional: record winners and losers to update modified Elo ratings. You can ignore this and just generate the next game normally.</div>
-      <div class="grid grid-2" style="margin-top:10px">
-        <button class="winner-btn" onclick="recordResult('win')">Record winning team</button>
-        <button class="loser-btn" onclick="recordResult('loss')">Record losing team</button>
-      </div>
-      <div class="grid grid-2" style="margin-top:10px">
-        <div><label>Winning team</label><select id="winTeamSelect"></select></div>
-        <div><label>Losing team</label><select id="lossTeamSelect"></select></div>
+      <div class="notice">Optional: tap the winning team box, then press Save results. Tap the winning team again to clear.</div>
+      <div style="margin-top:10px">
+        <button class="btn-success" onclick="saveResults()">Save results</button>
       </div>
       <div id="resultMessage" class="small" style="margin-top:8px"></div>
     </details>
@@ -100,8 +96,8 @@
         <div>
           <label>Quick tools</label>
           <div class="toolbar">
-            <button class="btn-warn" onclick="clearAttendance()">Clear attendance</button>
             <button class="btn-danger" onclick="resetHistory()">Reset teammate history</button>
+            <button class="btn-secondary" onclick="clearResultsSelection()">Clear winner selection</button>
           </div>
         </div>
       </div>
@@ -153,21 +149,10 @@
         <div><label>Search players</label><input id="playerSearch" type="text" placeholder="Search by name..." oninput="renderPlayers()"></div>
         <div><label>Inactive players</label><button id="toggleInactiveBtn" class="btn-secondary" onclick="toggleShowInactive()">Show inactive players</button></div>
       </div>
-      <div id="playerList" class="list" style="margin-top:10px"></div>
-    </details>
-  </div>
-
-  <div class="card">
-    <details>
-      <summary><span class="summary-title">6) Modified Elo notes</span><span></span></summary>
-      <div class="info-box" style="margin-top:10px">
-        <div class="small">Each player's overall used for team building is:</div>
-        <div><code>base overall + Win/Loss Rating</code></div>
-        <div class="small" style="margin-top:8px">Expected win chance is logistic:</div>
-        <div><code>1 / (1 + 10^((opp - team) / 4))</code></div>
-        <div class="small" style="margin-top:8px">Rating update per player on the team:</div>
-        <div><code>K × (actual - expected)</code>, with <code>K = 0.08</code></div>
+      <div style="margin-top:10px">
+        <button class="btn-warn" onclick="clearAttendance()">Clear attendance</button>
       </div>
+      <div id="playerList" class="list" style="margin-top:10px"></div>
     </details>
   </div>
 </div>
@@ -179,8 +164,8 @@
 </div></div>
 
 <script>
-const STORAGE_KEY = "ultimate_teams_pages_v4";
-const defaultState = {players: [], pairRules: [], history: {}, currentGame: null, nextId: 1, showInactive: false};
+const STORAGE_KEY = "ultimate_teams_pages_v5";
+const defaultState = {players: [], pairRules: [], history: {}, currentGame: null, nextId: 1, showInactive: false, selectedWinnerIndex: null};
 let state = loadState();
 
 function loadState(){
@@ -191,7 +176,7 @@ function loadState(){
 }
 function saveState(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); updateStats(); }
 function downloadState(){ const blob = new Blob([JSON.stringify(state, null, 2)], {type:"application/json"}); const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "ultimate-teams-backup.json"; a.click(); }
-function restoreState(event){ const file = event.target.files[0]; if(!file) return; const reader = new FileReader(); reader.onload = () => { try{ state = JSON.parse(reader.result); if(typeof state.showInactive === "undefined") state.showInactive = false; saveState(); renderAll(); alert("Backup restored."); }catch(e){ alert("Could not read backup JSON."); } }; reader.readAsText(file); }
+function restoreState(event){ const file = event.target.files[0]; if(!file) return; const reader = new FileReader(); reader.onload = () => { try{ state = JSON.parse(reader.result); if(typeof state.showInactive === "undefined") state.showInactive = false; if(typeof state.selectedWinnerIndex === "undefined") state.selectedWinnerIndex = null; saveState(); renderAll(); alert("Backup restored."); }catch(e){ alert("Could not read backup JSON."); } }; reader.readAsText(file); }
 function normalizeName(name){ return name.trim().replace(/\s+/g," "); }
 function splitName(full){ const parts = normalizeName(full).split(" "); return {first: parts[0] || "", last: parts.slice(1).join(" ")}; }
 function playerById(id){ return state.players.find(p => p.id === id); }
@@ -262,21 +247,6 @@ function updateSelectOptions(){
     });
     sel.value = current;
   });
-
-  const winSel = document.getElementById("winTeamSelect");
-  const lossSel = document.getElementById("lossTeamSelect");
-  [winSel, lossSel].forEach(sel => {
-    const current = sel.value;
-    sel.innerHTML = '<option value="">Select...</option>';
-    if(state.currentGame){
-      state.currentGame.teams.forEach((team, idx) => {
-        const opt = document.createElement("option");
-        opt.value = idx; opt.textContent = `Team ${idx+1}`;
-        sel.appendChild(opt);
-      });
-    }
-    sel.value = current;
-  });
 }
 function renderPresentList(){
   const box = document.getElementById("presentPlayersList");
@@ -324,21 +294,36 @@ function renderPlayers(){
     list.appendChild(div);
   });
 }
+function selectWinner(teamIndex){
+  if(state.selectedWinnerIndex === teamIndex) state.selectedWinnerIndex = null;
+  else state.selectedWinnerIndex = teamIndex;
+  saveState();
+  renderTeams();
+}
+function clearResultsSelection(){
+  state.selectedWinnerIndex = null;
+  saveState();
+  renderTeams();
+}
 function renderTeams(){
   const out = document.getElementById("teamsOutput");
   out.innerHTML = "";
   document.getElementById("resultMessage").textContent = "";
-  if(!state.currentGame){ out.innerHTML = '<div class="small">No game generated yet.</div>'; updateSelectOptions(); return; }
+  if(!state.currentGame){ out.innerHTML = '<div class="small">No game generated yet.</div>'; return; }
   const wrap = document.createElement("div");
   wrap.className = "grid grid-3";
   state.currentGame.teams.forEach((team, idx) => {
     const stats = teamStats(team), box = document.createElement("div");
-    box.className = "teambox";
+    let cls = "teambox team-clickable";
+    if(state.selectedWinnerIndex !== null){
+      cls += idx === state.selectedWinnerIndex ? " team-win" : " team-loss";
+    }
+    box.className = cls;
+    box.onclick = () => selectWinner(idx);
     box.innerHTML = `<div class="teamhead"><strong>Team ${idx+1}</strong><span class="small">${stats.overall.toFixed(2)}</span></div><div class="small">H ${stats.handling.toFixed(1)} · C ${stats.cutting.toFixed(1)} · D ${stats.defense.toFixed(1)}</div><div class="hr"></div>${team.map(p => `<div class="row" style="justify-content:space-between"><span>${p.fullName}</span><span class="small">${overall(p).toFixed(2)}</span></div>`).join("")}`;
     wrap.appendChild(box);
   });
   out.appendChild(wrap);
-  updateSelectOptions();
 }
 function toggleShowInactive(){ state.showInactive = !state.showInactive; saveState(); updateShowInactiveButton(); renderPlayers(); }
 function updateShowInactiveButton(){ const btn = document.getElementById("toggleInactiveBtn"); btn.textContent = state.showInactive ? "Hide inactive players" : "Show inactive players"; }
@@ -434,48 +419,39 @@ function generateGame(){
     const initial = makeInitialTeams(players, numTeams), candidate = optimizeTeams(initial, repeatWeight);
     if(!best || candidate.score < best.score) best = candidate;
   }
-  state.currentGame = best; saveState(); renderTeams();
+  state.currentGame = best;
+  state.selectedWinnerIndex = null;
+  saveState();
+  renderTeams();
 }
-function applyResult(winnerIndex, loserIndex){
+function applyResult(winnerIndex){
   if(!state.currentGame) return;
-  const winnerTeam = state.currentGame.teams[winnerIndex];
-  const loserTeam = state.currentGame.teams[loserIndex];
-  const winnerStrength = teamStrength(winnerTeam);
-  const loserStrength = teamStrength(loserTeam);
-  const expectedWinner = expectedWinProb(winnerStrength, loserStrength);
-  const expectedLoser = expectedWinProb(loserStrength, winnerStrength);
-  const K = 0.08;
-
-  winnerTeam.forEach(p => {
-    const player = playerById(p.id);
-    if(player) player.winLossRating = Number(player.winLossRating || 0) + K * (1 - expectedWinner);
+  state.currentGame.teams.forEach((team, idx) => {
+    if(idx === winnerIndex) return;
+    const winnerTeam = state.currentGame.teams[winnerIndex];
+    const loserTeam = team;
+    const winnerStrength = teamStrength(winnerTeam);
+    const loserStrength = teamStrength(loserTeam);
+    const expectedWinner = expectedWinProb(winnerStrength, loserStrength);
+    const expectedLoser = expectedWinProb(loserStrength, winnerStrength);
+    const K = 0.08;
+    winnerTeam.forEach(p => {
+      const player = playerById(p.id);
+      if(player) player.winLossRating = Number(player.winLossRating || 0) + K * (1 - expectedWinner);
+    });
+    loserTeam.forEach(p => {
+      const player = playerById(p.id);
+      if(player) player.winLossRating = Number(player.winLossRating || 0) + K * (0 - expectedLoser);
+    });
   });
-  loserTeam.forEach(p => {
-    const player = playerById(p.id);
-    if(player) player.winLossRating = Number(player.winLossRating || 0) + K * (0 - expectedLoser);
-  });
-
   saveState();
   renderAll();
-  document.getElementById("resultMessage").textContent =
-    `Recorded result. Expected winner chance was ${(expectedWinner*100).toFixed(1)}%. Upsets change ratings more than expected results.`;
+  document.getElementById("resultMessage").textContent = `Saved results for Team ${winnerIndex + 1}.`;
 }
-function recordResult(kind){
+function saveResults(){
   if(!state.currentGame){ alert("Generate a game first."); return; }
-  const winIdx = document.getElementById("winTeamSelect").value;
-  const lossIdx = document.getElementById("lossTeamSelect").value;
-
-  if(kind === 'win'){
-    if(winIdx === "") { alert("Select the winning team."); return; }
-    if(state.currentGame.teams.length !== 2 && lossIdx === "") { alert("For 3+ teams, also select the losing team."); return; }
-    const loser = lossIdx === "" ? (Number(winIdx) === 0 ? 1 : 0) : Number(lossIdx);
-    applyResult(Number(winIdx), loser);
-  } else {
-    if(lossIdx === "") { alert("Select the losing team."); return; }
-    if(state.currentGame.teams.length !== 2 && winIdx === "") { alert("For 3+ teams, also select the winning team."); return; }
-    const winner = winIdx === "" ? (Number(lossIdx) === 0 ? 1 : 0) : Number(winIdx);
-    applyResult(winner, Number(lossIdx));
-  }
+  if(state.selectedWinnerIndex === null){ alert("Tap the winning team first."); return; }
+  applyResult(state.selectedWinnerIndex);
 }
 function saveCurrentGame(){
   if(!state.currentGame){ alert("Generate a game first."); return; }
@@ -487,7 +463,12 @@ function saveCurrentGame(){
       }
     }
   });
-  state.currentGame = null; saveState(); renderAll(); generateGame(); alert("Saved history and generated next game.");
+  state.currentGame = null;
+  state.selectedWinnerIndex = null;
+  saveState();
+  renderAll();
+  generateGame();
+  alert("Saved history and generated next game.");
 }
 renderAll();
 </script>
