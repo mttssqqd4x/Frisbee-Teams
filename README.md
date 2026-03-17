@@ -356,22 +356,11 @@ Examples:
 - `20260316_ultimate-teams-backup.json`
 
 
-## Cleaner app updates
+## UI cleanup in v12
 
-This version uses an internal service-worker cache version so updates propagate more cleanly.
-
-### Recommended Home Screen setup
-Add the app to your iPhone Home Screen using the clean URL:
-
-`https://YOUR_USERNAME.github.io/YOUR_REPO/`
-
-Do **not** add a `?v=` URL to the Home Screen.
-
-### After publishing a new version
-1. Upload the new files to GitHub
-2. Wait for Pages to redeploy
-3. Open the clean app URL once in Safari
-4. Refresh once if needed
-5. Then reopen the Home Screen app
-
-The app now deletes older caches automatically when a new version is installed.
+This version makes the attendance list more streamlined:
+- removed the subtitle line under player names in the attendance list
+- removed the Session label field
+- added guidance ranges next to:
+  - Anti-repeat strength: 0–10, typical 3–6
+  - Pair rule strength: 0.1–5, typical 0.5–2

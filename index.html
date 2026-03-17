@@ -131,7 +131,7 @@
         <div><label>Player 1</label><select id="pairP1"></select></div>
         <div><label>Player 2</label><select id="pairP2"></select></div>
         <div><label>Rule</label><select id="pairType"><option value="apart">Apart</option><option value="together">Together</option></select></div>
-        <div><label>Strength</label><input id="pairStrength" type="number" min="0.1" step="0.1" value="1.0"></div>
+        <div><label>Strength <span class="muted-inline">(0.1–5, typical 0.5–2)</span></label><input id="pairStrength" type="number" min="0.1" max="5" step="0.1" value="1.0"></div>
       </div>
       <div style="margin-top:10px" class="section-actions">
         <button class="btn" onclick="addPairRule()">Add pair rule</button>
@@ -148,10 +148,9 @@
         <summary><span class="muted-inline">Present players</span><span class="muted-inline" id="presentCount"></span></summary>
         <div id="presentPlayersList" class="present-list" style="margin-top:10px"></div>
       </details>
-      <div class="grid grid-3" style="margin-top:10px">
-        <div><label>Session label</label><input id="sessionLabel" placeholder="2026-03-14 PM"></div>
+      <div class="grid grid-2" style="margin-top:10px">
         <div><label>Number of teams</label><input id="numTeams" type="number" min="2" value="3"></div>
-        <div><label>Anti-repeat strength</label><input id="repeatWeight" type="number" min="0" step="0.5" value="4.0"></div>
+        <div><label>Anti-repeat strength <span class="muted-inline">(0–10, typical 3–6)</span></label><input id="repeatWeight" type="number" min="0" max="10" step="0.5" value="4.0"></div>
       </div>
       <div style="margin-top:10px" class="grid grid-2">
         <div><label>Search players</label><input id="playerSearch" type="text" placeholder="Search by name..." oninput="renderPlayers()"></div>
@@ -366,7 +365,7 @@ function renderPlayers(){
     const div = document.createElement("div");
     div.className = "player clickable" + (p.attending && p.active ? " attend-on" : "") + (!p.active ? " inactive" : "") + (p.temporary ? " temp" : "");
     div.onclick = (e) => { if (e.target.closest('button')) return; toggleAttendance(p.id); };
-    div.innerHTML = `<div><div class="player-name">${p.fullName}</div><div class="small">${p.active ? 'active' : 'inactive'} · injury ${(Number(p.injuryPct)*100).toFixed(0)}% · W/L ${Number(p.winLossRating||0).toFixed(2)}${cloneName ? ` · like ${cloneName}` : ''}${p.temporary ? ' · temp' : ''}</div></div><div class="toggle-wrap"><button onclick="event.stopPropagation(); toggleActive(${p.id})">${p.active ? 'Inactive' : 'Active'}</button><button onclick="event.stopPropagation(); setInjuryPrompt(${p.id})">Injury %</button>${p.temporary ? `<button class="btn-danger" onclick="event.stopPropagation(); removePlayer(${p.id})">Remove</button>` : ''}</div>`;
+    div.innerHTML = `<div><div class="player-name">${p.fullName}</div></div><div class="toggle-wrap"><button onclick="event.stopPropagation(); toggleActive(${p.id})">${p.active ? 'Inactive' : 'Active'}</button><button onclick="event.stopPropagation(); setInjuryPrompt(${p.id})">Injury %</button>${p.temporary ? `<button class="btn-danger" onclick="event.stopPropagation(); removePlayer(${p.id})">Remove</button>` : ''}</div>`;
     list.appendChild(div);
   });
 }
