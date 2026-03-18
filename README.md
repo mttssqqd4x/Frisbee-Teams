@@ -537,3 +537,18 @@ Fix:
 - the Data-page cloned Pair Rules controls now get unique IDs
 - Add Pair Rule on the Data page now passes the selected values directly
 - the Data-page cloned controls are synced from the source controls safely
+
+
+## Fix In v24
+
+This version moves Pair Rules back to the Main page as a collapsible subsection under Attendance And Player Settings.
+
+Why:
+- the repeated Pair Rules issues were caused by the cloned Data-page Pair Rules controls
+- moving Pair Rules back to the Main page removes the fragile clone/sync path
+
+Changes:
+- Pair Rules is now a boxed collapsible subsection on the Main page
+- the Data page no longer shows Pair Rules
+- Add Pair Rule on the Main page uses the visible Main-page controls directly
+- the Pair Rules list renders on the Main page subsection

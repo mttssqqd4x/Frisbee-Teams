@@ -135,7 +135,7 @@
   </div>
 
   <div class="card" id="pairRulesCard" style="display:none">
-    <details id="section-pair-rules">
+    <details id="section-pair-rules" style="display:none">
       <summary><span class="summary-title">Pair Rules</span><span></span></summary>
       <div class="grid grid-4" style="margin-top:10px">
         <div><label>Player 1</label><select id="pairP1"></select></div>
@@ -175,6 +175,23 @@
           <div style="margin-top:10px"><button class="btn" onclick="addTempPlayerFromInputs()">Add One-Time Player</button></div>
         </details>
       </div>
+
+      <div class="subbox">
+        <details id="attendancePairRules">
+          <summary><span class="muted-inline">Pair Rules</span><span></span></summary>
+          <div class="grid grid-4" style="margin-top:10px">
+            <div><label>Player 1</label><select id="pairP1Main"></select></div>
+            <div><label>Player 2</label><select id="pairP2Main"></select></div>
+            <div><label>Rule</label><select id="pairTypeMain"><option value="apart">Apart</option><option value="together">Together</option></select></div>
+            <div><label>Strength <span class="muted-inline">(0.1–5, Typical 0.5–2)</span></label><input id="pairStrengthMain" type="number" min="0.1" max="5" step="0.1" value="1.0"></div>
+          </div>
+          <div style="margin-top:10px" class="section-actions">
+            <button class="btn" onclick="addPairRuleFromMain()">Add Pair Rule</button>
+            <button class="btn-secondary" onclick="clearPairRules()">Clear All Pair Rules</button>
+          </div>
+          <div id="pairRuleListMain" class="list" style="margin-top:10px"></div>
+        </details>
+      </div>
       <div class="grid grid-1" style="margin-top:10px">
         <div><label>Number Of Teams</label><input id="numTeams" type="number" min="2" value="3"></div>
       </div>
@@ -200,7 +217,7 @@
     </div>
   </div>
   <div class="card"><div id="dataLoadEdit"></div></div>
-  <div class="card"><div id="dataPairRules"></div></div>
+  
 </div>
 
 <div class="stickybar"><div class="inner">
@@ -458,7 +475,7 @@ function updateStats(){
 function updateSelectOptions(){
   const allPlayers = [...state.players].sort((a,b)=>a.fullName.localeCompare(b.fullName));
   const present = presentPlayers();
-  const map = {"tempLike": allPlayers, "tempLike2": allPlayers, "pairP1": present, "pairP2": present};
+  const map = {"tempLike": allPlayers, "tempLike2": allPlayers, "pairP1": present, "pairP2": present, "pairP1Main": present, "pairP2Main": present};
   Object.keys(map).forEach(id => {
     const sel = document.getElementById(id), current = sel.value;
     sel.innerHTML = '<option value="">Select...</option>';
@@ -486,22 +503,29 @@ function renderPresentList(){
 }
 function renderPairRules(){
   const box = document.getElementById("pairRuleList");
-  box.innerHTML = "";
+  const mainBox = document.getElementById("pairRuleListMain");
+  if(box) box.innerHTML = "";
+  if(mainBox) mainBox.innerHTML = "";
   if(!state.pairRules.length){
-    box.innerHTML = '<div class="small">No pair rules yet.</div>';
-    const cloneBox = document.querySelector('#dataPairRules #pairRuleList');
-    if(cloneBox) cloneBox.innerHTML = box.innerHTML;
+    const empty = '<div class="small">No pair rules yet.</div>';
+    if(box) box.innerHTML = empty;
+    if(mainBox) mainBox.innerHTML = empty;
     return;
   }
   state.pairRules.forEach((r, idx) => {
     const p1 = playerById(r.player1Id), p2 = playerById(r.player2Id);
-    const div = document.createElement("div");
-    div.className = "player";
-    div.innerHTML = `<div><div class="player-name">${p1?.fullName || "Unknown"} ↔ ${p2?.fullName || "Unknown"}</div></div><div class="toggle-wrap"><button class="btn-danger" onclick="removePairRule(${idx})">Remove</button></div>`;
-    box.appendChild(div);
+    const html = `<div class="player"><div><div class="player-name">${p1?.fullName || "Unknown"} ↔ ${p2?.fullName || "Unknown"}</div></div><div class="toggle-wrap"><button class="btn-danger" onclick="removePairRule(${idx})">Remove</button></div></div>`;
+    if(box){
+      const d1 = document.createElement("div");
+      d1.innerHTML = html;
+      box.appendChild(d1.firstChild);
+    }
+    if(mainBox){
+      const d2 = document.createElement("div");
+      d2.innerHTML = html;
+      mainBox.appendChild(d2.firstChild);
+    }
   });
-  const cloneBox = document.querySelector('#dataPairRules #pairRuleList');
-  if(cloneBox) cloneBox.innerHTML = box.innerHTML;
 }
 function renderPlayers(){
   const list = document.getElementById("playerList");
@@ -629,6 +653,13 @@ function syncDataPage(){
   const inactiveData = document.getElementById("inactiveCsvData");
   if(activeHidden && activeData && !activeData.value) activeData.value = activeHidden.value;
   if(inactiveHidden && inactiveData && !inactiveData.value) inactiveData.value = inactiveHidden.value;
+}
+function addPairRuleFromMain(){
+  const p1 = document.getElementById("pairP1Main")?.value || null;
+  const p2 = document.getElementById("pairP2Main")?.value || null;
+  const type = document.getElementById("pairTypeMain")?.value || null;
+  const strength = document.getElementById("pairStrengthMain")?.value || null;
+  addPairRule(p1, p2, type, strength);
 }
 function renderAll(){ updateStats(); updateSelectOptions(); renderPresentList(); renderPairRules(); updateShowInactiveButton(); renderPlayers(); renderTeams(); syncDataPage(); }
 function clearAttendance(){ if(!confirm("Clear Attendance?")) return; state.players.forEach(p => p.attending = false); saveState(); renderAll(); }
