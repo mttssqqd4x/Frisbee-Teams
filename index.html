@@ -314,9 +314,8 @@ function parseCsv(text){
     return obj;
   });
 }
-function importCsv(inactive){
-  const id = inactive ? "inactiveCsv" : "activeCsv";
-  const text = document.getElementById(id).value.trim();
+function importCsv(inactive, sourceId){
+  const text = getCsvText(inactive, sourceId);
   if(!text){ alert("Paste CSV first."); return; }
   const rows = parseCsv(text);
   rows.forEach(row => {
@@ -503,6 +502,13 @@ function syncDataPage(){
   const rwData = document.getElementById("repeatWeightData");
   const rw = document.getElementById("repeatWeight");
   if(rwData && rw) rwData.value = rw.value;
+
+  const activeHidden = document.getElementById("activeCsv");
+  const inactiveHidden = document.getElementById("inactiveCsv");
+  const activeData = document.getElementById("activeCsvData");
+  const inactiveData = document.getElementById("inactiveCsvData");
+  if(activeHidden && activeData && !activeData.value) activeData.value = activeHidden.value;
+  if(inactiveHidden && inactiveData && !inactiveData.value) inactiveData.value = inactiveHidden.value;
 }
 function renderAll(){ updateStats(); updateSelectOptions(); renderPresentList(); renderPairRules(); updateShowInactiveButton(); renderPlayers(); renderTeams(); syncDataPage(); }
 function clearAttendance(){ state.players.forEach(p => p.attending = false); saveState(); renderAll(); }

@@ -426,3 +426,15 @@ It also changes Current Game behavior:
 - Current Game is collapsed by default
 - Generate Game opens Current Game and scrolls to the top of the page
 - Save Teams + Next Game also opens Current Game and scrolls to the top of the page
+
+
+## Fix In v16
+
+This version fixes Data page CSV import and preview.
+
+The issue was that the Data page buttons were not reliably reading from the visible Data page textareas.
+Now:
+- Preview Active CSV reads directly from the Active CSV box on the Data page
+- Import Active CSV reads directly from the Active CSV box on the Data page
+- Preview Inactive CSV reads directly from the Inactive CSV box on the Data page
+- Import Inactive CSV reads directly from the Inactive CSV box on the Data page
