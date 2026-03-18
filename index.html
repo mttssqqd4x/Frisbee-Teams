@@ -60,7 +60,7 @@
   </div>
 
   <div class="card" id="teamsSection">
-    <details id="section-current-game" open>
+    <details id="section-current-game">
       <summary><span class="summary-title">Current Game</span><span class="muted-inline">teams</span></summary>
       <div id="teamsOutput" style="margin-top:10px"></div>
       <div class="hr"></div>
@@ -89,6 +89,9 @@
         </div>
       </div>
       <div class="hr"></div>
+      <div class="grid grid-1" style="margin-top:10px">
+        <div><label>Anti-Repeat Strength <span class="muted-inline">(0–10, Typical 3–6)</span></label><input id="repeatWeightData" type="number" min="0" max="10" step="0.5" value="4.0" oninput="syncRepeatWeightFromData()"></div>
+      </div>
       <div class="grid grid-2">
         <div>
           <label>Backup / Restore</label>
@@ -170,9 +173,8 @@
           <div style="margin-top:10px"><button class="btn" onclick="addTempPlayerFromInputs()">Add One-Time Player</button></div>
         </details>
       </div>
-      <div class="grid grid-2" style="margin-top:10px">
+      <div class="grid grid-1" style="margin-top:10px">
         <div><label>Number Of Teams</label><input id="numTeams" type="number" min="2" value="3"></div>
-        <div><label>Anti-Repeat Strength <span class="muted-inline">(0–10, Typical 3–6)</span></label><input id="repeatWeight" type="number" min="0" max="10" step="0.5" value="4.0"></div>
       </div>
       <div style="margin-top:10px" class="grid grid-2">
         <div><label>Inactive Players</label><button id="toggleInactiveBtn" class="btn-secondary" onclick="toggleShowInactive()">Show Inactive Players</button></div>
@@ -474,6 +476,16 @@ function addTempPlayerFromInputs(){
   document.getElementById("tempName2").value = "";
   saveState(); renderAll();
 }
+function syncRepeatWeightFromData(){
+  const src = document.getElementById("repeatWeightData");
+  const dst = document.getElementById("repeatWeight");
+  if(src && dst) dst.value = src.value;
+}
+function openCurrentGameAndScrollTop(){
+  const current = document.getElementById("section-current-game");
+  if(current) current.open = true;
+  window.scrollTo({top: 0, behavior: "smooth"});
+}
 function showPage(page){
   document.getElementById("mainPage").style.display = page === "main" ? "block" : "none";
   document.getElementById("dataPage").style.display = page === "data" ? "block" : "none";
@@ -488,6 +500,9 @@ function syncDataPage(){
   const pairRulesDst = document.getElementById("dataPairRules");
   if(loadEditSrc && loadEditDst) loadEditDst.innerHTML = loadEditSrc.innerHTML.replace('style="display:none"','');
   if(pairRulesSrc && pairRulesDst) pairRulesDst.innerHTML = pairRulesSrc.innerHTML.replace('style="display:none"','');
+  const rwData = document.getElementById("repeatWeightData");
+  const rw = document.getElementById("repeatWeight");
+  if(rwData && rw) rwData.value = rw.value;
 }
 function renderAll(){ updateStats(); updateSelectOptions(); renderPresentList(); renderPairRules(); updateShowInactiveButton(); renderPlayers(); renderTeams(); syncDataPage(); }
 function clearAttendance(){ state.players.forEach(p => p.attending = false); saveState(); renderAll(); }
@@ -594,6 +609,7 @@ function generateGame(){
   state.selectedWinnerIndex = null;
   saveState();
   renderTeams();
+  openCurrentGameAndScrollTop();
 }
 function applyResult(winnerIndex){
   if(!state.currentGame) return;
@@ -653,6 +669,7 @@ function saveCurrentGame(){
   saveState();
   renderAll();
   generateGame();
+  openCurrentGameAndScrollTop();
   alert("Saved history and generated next game.");
 }
 renderAll();

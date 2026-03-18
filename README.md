@@ -416,3 +416,13 @@ This version makes a few layout refinements:
 - Load Or Edit Players and Pair Rules on the Data page are each inside their own boxed card
 - the restore file input remains hidden and only the Restore Backup JSON button is shown
 - the bottom bar buttons are centered and displayed as two buttons instead of three slots
+
+
+## Layout Changes In v15
+
+This version moves Anti-Repeat Strength to the Data page under Load Or Edit Players.
+
+It also changes Current Game behavior:
+- Current Game is collapsed by default
+- Generate Game opens Current Game and scrolls to the top of the page
+- Save Teams + Next Game also opens Current Game and scrolls to the top of the page
