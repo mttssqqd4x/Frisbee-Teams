@@ -35,7 +35,7 @@
     .team-win{outline:2px solid var(--accent);background:var(--winbg);border-color:var(--winborder)}
     .team-loss{outline:2px solid var(--danger);background:var(--losebg);border-color:var(--loseborder)}
     .stickybar{position:fixed;left:0;right:0;bottom:0;background:rgba(0,0,0,.97);border-top:1px solid var(--border);padding:10px 12px calc(10px + env(safe-area-inset-bottom));backdrop-filter:blur(10px)}
-    .stickybar .inner{max-width:900px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+    .stickybar .inner{max-width:700px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr;gap:10px;justify-content:center}
     .section-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.hr{height:1px;background:var(--border);margin:10px 0}
     details > summary{list-style:none;cursor:pointer;display:flex;justify-content:space-between;align-items:center;padding:0;margin:0}
     details > summary::-webkit-details-marker{display:none}.summary-title{font-size:1.1rem;font-weight:700}
@@ -48,11 +48,11 @@
 </head>
 <body>
 <div class="app">
-  <div class="topbar"><button class="btn-secondary" style="width:auto" onclick="showPage('data')">Data</button><button class="btn-secondary" style="width:auto" onclick="showPage('main')">Main</button></div>
+  <div class="topbar"><button class="btn-secondary" style="width:auto" onclick="showPage('main')">Main</button><button class="btn-secondary" style="width:auto" onclick="showPage('data')">Data</button></div>
   <div id="mainPage">
   <div class="card">
     <h1>Ultimate Teams</h1>
-    <div class="row">
+    <div class="row" style="display:none">
       <span class="chip">Players: <strong id="statPlayers">0</strong></span>
       <span class="chip">Attending: <strong id="statAttending">0</strong></span>
       <span class="chip">History pairs: <strong id="statHistory">0</strong></span>
@@ -162,11 +162,10 @@
             <div><label>New Player Full Name</label><input id="tempName2" placeholder="Mike Jones"></div>
             <div><label>Rate Like</label><select id="tempLike2" onchange="loadTempRatingsFromLike()"></select></div>
           </div>
-          <div class="grid grid-4" style="margin-top:10px">
+          <div class="grid grid-3" style="margin-top:10px">
             <div><label>Handling</label><input id="tempHandling" type="number" step="0.1" value="3"></div>
             <div><label>Cutting</label><input id="tempCutting" type="number" step="0.1" value="3"></div>
             <div><label>Defense</label><input id="tempDefense" type="number" step="0.1" value="3"></div>
-            <div><label>Win/Loss</label><input id="tempWL" type="number" step="0.01" value="0.00"></div>
           </div>
           <div style="margin-top:10px"><button class="btn" onclick="addTempPlayerFromInputs()">Add One-Time Player</button></div>
         </details>
@@ -197,14 +196,13 @@
       <span class="chip">History Pairs: <strong id="statHistoryData">0</strong></span>
     </div>
   </div>
-  <div id="dataLoadEdit"></div>
-  <div id="dataPairRules"></div>
+  <div class="card"><div id="dataLoadEdit"></div></div>
+  <div class="card"><div id="dataPairRules"></div></div>
 </div>
 
 <div class="stickybar"><div class="inner">
-  <button class="btn-success" onclick="generateGame()">Generate game</button>
-  <button class="btn" onclick="saveCurrentGame()">Save teams + next game</button>
-  <span></span>
+  <button class="btn-success" onclick="generateGame()">Generate Game</button>
+  <button class="btn" onclick="saveCurrentGame()">Save Teams + Next Game</button>
 </div></div>
 
 <script>
@@ -458,7 +456,6 @@ function loadTempRatingsFromLike(){
   document.getElementById("tempHandling").value = Number(src.handling || 3);
   document.getElementById("tempCutting").value = Number(src.cutting || 3);
   document.getElementById("tempDefense").value = Number(src.defense || 3);
-  document.getElementById("tempWL").value = Number(src.winLossRating || 0).toFixed(2);
 }
 function addTempPlayerFromInputs(){
   const fullName = normalizeName(document.getElementById("tempName2").value);
@@ -471,7 +468,7 @@ function addTempPlayerFromInputs(){
     cutting: Number(document.getElementById("tempCutting").value || 3),
     defense: Number(document.getElementById("tempDefense").value || 3),
     combined: 0,
-    winLossRating: Number(document.getElementById("tempWL").value || 0),
+    winLossRating: 0.00,
     active: true, attending: true, injuryPct: 1, temporary: true, tempTodayOnly: false, copiedFromId: null, gamesPlayed: 0, wins: 0, losses: 0
   });
   document.getElementById("tempName2").value = "";

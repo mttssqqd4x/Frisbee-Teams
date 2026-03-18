@@ -404,3 +404,15 @@ The Data page contains:
 - Pair Rules tools
 
 This keeps the main page focused on attendance, teams, and gameplay.
+
+
+## Layout Changes In v14
+
+This version makes a few layout refinements:
+- Main button is now on the left and Data is on the right
+- the main page no longer shows the player/attending/history counts
+- the Add One-Time Player subsection no longer shows a Win/Loss input
+- new one-time players now default to Win/Loss = 0.00
+- Load Or Edit Players and Pair Rules on the Data page are each inside their own boxed card
+- the restore file input remains hidden and only the Restore Backup JSON button is shown
+- the bottom bar buttons are centered and displayed as two buttons instead of three slots
