@@ -1,0 +1,9 @@
+{
+  "players": [],
+  "history": {},
+  "pairRules": [],
+  "currentGame": null,
+  "selectedWinnerIndex": null,
+  "nextId": 1,
+  "showInactive": false
+}
