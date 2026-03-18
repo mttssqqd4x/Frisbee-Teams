@@ -468,3 +468,31 @@ How it works:
 - the app does **not** need to display Combined in the interface
 
 This lets you keep Combined in your CSV files for your own viewing and sorting without breaking imports.
+
+
+## Header And Button Changes In v19
+
+This version updates the top navigation and a few attendance controls.
+
+Changes:
+- moved the title **Ultimate Teams** out of the box and onto the same line as the Main and Data buttons
+- the current page button is highlighted in a slightly lighter gray
+- removed the word **Data** from the top box on the Data page
+- removed the headings above:
+  - Show Inactive Players
+  - Clear Attendance
+
+
+## Button And Layout Changes In v20
+
+This version adds a confirmation popup for clearing attendance and cleans up controls.
+
+Changes:
+- Clear Attendance now asks: `Clear Attendance?`
+- removed the Clear Winner Selection button
+- hides the bottom bar on the Data page
+- Save Teams + Next Game now uses a forced two-line label:
+  - `Save Teams`
+  - `+ Next Game`
+
+This keeps the button wrapping consistent on smaller screens.

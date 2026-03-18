@@ -44,13 +44,15 @@
     .subbox{border:1px solid var(--border);border-radius:12px;background:var(--card2);padding:10px;margin-top:10px}
     .topbar{display:flex;justify-content:flex-end;margin:0 0 8px 0;gap:8px}
     .search-row{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:end}
+    .tab-active{background:#2a2a2a;border-color:#3a3a3a}
+    .btn-nextline{line-height:1.15}
   </style>
 </head>
 <body>
 <div class="app">
-  <div class="topbar"><button class="btn-secondary" style="width:auto" onclick="showPage('main')">Main</button><button class="btn-secondary" style="width:auto" onclick="showPage('data')">Data</button></div>
+  <div class="topbar"><h1 style="margin:0;flex:1">Ultimate Teams</h1><button id="mainTabBtn" class="btn-secondary tab-active" style="width:auto" onclick="showPage('main')">Main</button><button id="dataTabBtn" class="btn-secondary" style="width:auto" onclick="showPage('data')">Data</button></div>
   <div id="mainPage">
-  <div class="card">
+  <div class="card" style="display:none">
     <h1>Ultimate Teams</h1>
     <div class="row" style="display:none">
       <span class="chip">Players: <strong id="statPlayers">0</strong></span>
@@ -109,7 +111,7 @@
           <label>Quick Tools</label>
           <div class="toolbar">
             <button class="btn-danger" onclick="resetHistory()">Reset Teammate History</button>
-            <button class="btn-secondary" onclick="clearResultsSelection()">Clear Winner Selection</button>
+            <span></span>
           </div>
           <div class="toolbar" style="margin-top:10px">
             <button class="btn-warn" onclick="resetSeasonStats()">Reset Season Stats</button>
@@ -177,8 +179,8 @@
         <div><label>Number Of Teams</label><input id="numTeams" type="number" min="2" value="3"></div>
       </div>
       <div style="margin-top:10px" class="grid grid-2">
-        <div><label>Inactive Players</label><button id="toggleInactiveBtn" class="btn-secondary" onclick="toggleShowInactive()">Show Inactive Players</button></div>
-        <div><label>Clear Attendance</label><button class="btn-warn" onclick="clearAttendance()">Clear Attendance</button></div>
+        <div><button id="toggleInactiveBtn" class="btn-secondary" onclick="toggleShowInactive()">Show Inactive Players</button></div>
+        <div><button class="btn-warn" onclick="clearAttendance()">Clear Attendance</button></div>
       </div>
       <div class="search-row" style="margin-top:10px">
         <div><label>Search Players</label><input id="playerSearch" type="text" placeholder="Search by name..." oninput="renderPlayers()"></div>
@@ -191,7 +193,6 @@
 
 <div id="dataPage" style="display:none">
   <div class="card">
-    <h1>Data</h1>
     <div class="row">
       <span class="chip">Players: <strong id="statPlayersData">0</strong></span>
       <span class="chip">Attending: <strong id="statAttendingData">0</strong></span>
@@ -204,7 +205,7 @@
 
 <div class="stickybar"><div class="inner">
   <button class="btn-success" onclick="generateGame()">Generate Game</button>
-  <button class="btn" onclick="saveCurrentGame()">Save Teams + Next Game</button>
+  <button class="btn btn-nextline" onclick="saveCurrentGame()">Save Teams<br>+ Next Game</button>
 </div></div>
 
 <script>
@@ -592,6 +593,12 @@ function openCurrentGameAndScrollTop(){
 function showPage(page){
   document.getElementById("mainPage").style.display = page === "main" ? "block" : "none";
   document.getElementById("dataPage").style.display = page === "data" ? "block" : "none";
+  const sticky = document.querySelector(".stickybar");
+  if(sticky) sticky.style.display = page === "data" ? "none" : "block";
+  const mainBtn = document.getElementById("mainTabBtn");
+  const dataBtn = document.getElementById("dataTabBtn");
+  if(mainBtn) mainBtn.classList.toggle("tab-active", page === "main");
+  if(dataBtn) dataBtn.classList.toggle("tab-active", page === "data");
   if(page === "data"){
     syncDataPage();
   }
@@ -615,7 +622,7 @@ function syncDataPage(){
   if(inactiveHidden && inactiveData && !inactiveData.value) inactiveData.value = inactiveHidden.value;
 }
 function renderAll(){ updateStats(); updateSelectOptions(); renderPresentList(); renderPairRules(); updateShowInactiveButton(); renderPlayers(); renderTeams(); syncDataPage(); }
-function clearAttendance(){ state.players.forEach(p => p.attending = false); saveState(); renderAll(); }
+function clearAttendance(){ if(!confirm("Clear Attendance?")) return; state.players.forEach(p => p.attending = false); saveState(); renderAll(); }
 function toggleAttendance(id){ const p = playerById(id); if(!p) return; if(!p.active) p.active = true; p.attending = !p.attending; saveState(); renderAll(); }
 function toggleActive(id){ const p = playerById(id); if(!p) return; p.active = !p.active; if(!p.active) p.attending = false; saveState(); renderAll(); }
 function setInjuryPrompt(id){ const p = playerById(id); if(!p) return; const current = Math.round((p.injuryPct || 1) * 100); const resp = prompt(`Injury percentage for ${p.fullName} (100 = full strength):`, current); if(resp === null) return; let num = Number(resp); if(Number.isNaN(num) || num <= 0){ alert("Enter a number above 0."); return; } p.injuryPct = num > 1 ? num / 100 : num; saveState(); renderAll(); }
