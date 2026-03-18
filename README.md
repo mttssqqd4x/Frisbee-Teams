@@ -522,3 +522,18 @@ Now the Data-page Pair Rules controls:
 - add rules correctly
 - clear rules correctly
 - keep the rule list refreshed on the Data page
+
+
+## Fix In v23
+
+This version fixes the remaining Data-page Pair Rules bug.
+
+Root cause:
+- the cloned Pair Rules controls on the Data page reused the same element IDs as the hidden source controls
+- the browser kept resolving those IDs to the hidden elements in some cases
+- that caused `Choose two different present players` even after valid selections
+
+Fix:
+- the Data-page cloned Pair Rules controls now get unique IDs
+- Add Pair Rule on the Data page now passes the selected values directly
+- the Data-page cloned controls are synced from the source controls safely
