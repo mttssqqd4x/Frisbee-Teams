@@ -75,16 +75,16 @@
   <div class="card" id="loadEditCard" style="display:none">
     <details id="section-load-edit">
       <summary><span class="summary-title">Load Or Edit Players</span><span></span></summary>
-      <div class="notice" style="margin-top:10px">Paste CSV with columns: First Name, Last Name, Handling, Cutting, Defense, Win/Loss.</div>
+      <div class="notice" style="margin-top:10px">Paste CSV with columns: First Name, Last Name, Handling, Cutting, Defense, Win/Loss. Optional extra column allowed: Combined.</div>
       <div class="grid grid-2" style="margin-top:10px">
         <div>
           <label>Active Ratings CSV</label>
-          <textarea id="activeCsv" placeholder="First Name,Last Name,Handling,Cutting,Defense,Win/Loss&#10;Sam,Schrader,7,7,7,0.00"></textarea>
+          <textarea id="activeCsv" placeholder="First Name,Last Name,Combined,Handling,Cutting,Defense,Win/Loss&#10;Sam,Schrader,7,7,7,0.00"></textarea>
           <button class="btn" onclick="importCsv(false)">Import Active CSV</button>
         </div>
         <div>
           <label>Inactive Ratings CSV</label>
-          <textarea id="inactiveCsv" placeholder="First Name,Last Name,Handling,Cutting,Defense,Win/Loss&#10;Old,Player,5,5,5,0.00"></textarea>
+          <textarea id="inactiveCsv" placeholder="First Name,Last Name,Combined,Handling,Cutting,Defense,Win/Loss&#10;Old,Player,5,5,5,0.00"></textarea>
           <button class="btn-secondary" onclick="importCsv(true)">Import Inactive CSV</button>
         </div>
       </div>

@@ -447,3 +447,24 @@ This version restores the missing CSV import helper functions that the Data page
 That fixes:
 - Paste CSV first appearing incorrectly after pasting into the Data page textareas
 - Data page preview/import not reading from the visible CSV boxes reliably
+
+
+## CSV Compatibility In v18
+
+This version tolerates an optional **Combined** column in imported CSV files.
+
+Accepted formats now include either:
+
+`First Name,Last Name,Handling,Cutting,Defense,Win/Loss`
+
+or:
+
+`First Name,Last Name,Combined,Handling,Cutting,Defense,Win/Loss`
+
+How it works:
+- the app will accept the Combined column if it is present
+- the app stores it internally for compatibility
+- the app does **not** use Combined for team generation
+- the app does **not** need to display Combined in the interface
+
+This lets you keep Combined in your CSV files for your own viewing and sorting without breaking imports.
