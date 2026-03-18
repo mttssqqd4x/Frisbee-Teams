@@ -552,3 +552,17 @@ Changes:
 - the Data page no longer shows Pair Rules
 - Add Pair Rule on the Main page uses the visible Main-page controls directly
 - the Pair Rules list renders on the Main page subsection
+
+
+## Pair Rules Display In v25
+
+This version makes Pair Rules more compact and easier to scan.
+
+Changes:
+- Pair Rules now show whether the rule is:
+  - Together
+  - Apart
+- Pair Rules now show the strength value
+- rule cards are color-coded:
+  - green for Together
+  - red for Apart
