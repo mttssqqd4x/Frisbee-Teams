@@ -41,10 +41,15 @@
     details > summary::-webkit-details-marker{display:none}.summary-title{font-size:1.1rem;font-weight:700}
     .present-list{display:grid;gap:4px}.present-row{padding:6px 8px;border:1px solid var(--border);border-radius:10px;background:var(--card2);display:flex;justify-content:space-between;gap:8px;align-items:center}
     .present-name{font-weight:600;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.present-meta{font-size:.78rem;color:var(--muted);white-space:nowrap}.muted-inline{color:var(--muted);font-size:.9rem}
+    .subbox{border:1px solid var(--border);border-radius:12px;background:var(--card2);padding:10px;margin-top:10px}
+    .topbar{display:flex;justify-content:flex-end;margin:0 0 8px 0;gap:8px}
+    .search-row{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:end}
   </style>
 </head>
 <body>
 <div class="app">
+  <div class="topbar"><button class="btn-secondary" style="width:auto" onclick="showPage('data')">Data</button><button class="btn-secondary" style="width:auto" onclick="showPage('main')">Main</button></div>
+  <div id="mainPage">
   <div class="card">
     <h1>Ultimate Teams</h1>
     <div class="row">
@@ -56,7 +61,7 @@
 
   <div class="card" id="teamsSection">
     <details id="section-current-game" open>
-      <summary><span class="summary-title">1) Current game</span><span class="muted-inline">teams</span></summary>
+      <summary><span class="summary-title">Current Game</span><span class="muted-inline">teams</span></summary>
       <div id="teamsOutput" style="margin-top:10px"></div>
       <div class="hr"></div>
       <div class="notice">Optional: tap the winning team box, then press Save results. Tap the winning team again to clear.</div>
@@ -67,44 +72,44 @@
     </details>
   </div>
 
-  <div class="card">
+  <div class="card" id="loadEditCard" style="display:none">
     <details id="section-load-edit">
-      <summary><span class="summary-title">2) Load or edit players</span><span></span></summary>
+      <summary><span class="summary-title">Load Or Edit Players</span><span></span></summary>
       <div class="notice" style="margin-top:10px">Paste CSV with columns: First Name, Last Name, Handling, Cutting, Defense, Win/Loss.</div>
       <div class="grid grid-2" style="margin-top:10px">
         <div>
-          <label>Active ratings CSV</label>
+          <label>Active Ratings CSV</label>
           <textarea id="activeCsv" placeholder="First Name,Last Name,Handling,Cutting,Defense,Win/Loss&#10;Sam,Schrader,7,7,7,0.00"></textarea>
-          <button class="btn" onclick="importCsv(false)">Import active CSV</button>
+          <button class="btn" onclick="importCsv(false)">Import Active CSV</button>
         </div>
         <div>
-          <label>Inactive ratings CSV</label>
+          <label>Inactive Ratings CSV</label>
           <textarea id="inactiveCsv" placeholder="First Name,Last Name,Handling,Cutting,Defense,Win/Loss&#10;Old,Player,5,5,5,0.00"></textarea>
-          <button class="btn-secondary" onclick="importCsv(true)">Import inactive CSV</button>
+          <button class="btn-secondary" onclick="importCsv(true)">Import Inactive CSV</button>
         </div>
       </div>
       <div class="hr"></div>
       <div class="grid grid-2">
         <div>
-          <label>Backup / restore</label>
+          <label>Backup / Restore</label>
           <div class="toolbar">
-            <button class="btn-secondary" onclick="downloadState()">Export backup JSON</button>
+            <button class="btn-secondary" onclick="downloadState()">Export Backup JSON</button>
             <button class="btn-secondary" onclick="downloadRatingsCsv()">Download Ratings CSV</button>
           </div>
           <div class="toolbar" style="margin-top:10px">
-            <button class="btn-secondary" onclick="document.getElementById('restoreFile').click()">Restore backup JSON</button>
+            <button class="btn-secondary" onclick="document.getElementById('restoreFile').click()">Restore Backup JSON</button>
             <span></span>
           </div>
           <input id="restoreFile" type="file" accept="application/json" style="display:none" onchange="restoreState(event)">
         </div>
         <div>
-          <label>Quick tools</label>
+          <label>Quick Tools</label>
           <div class="toolbar">
-            <button class="btn-danger" onclick="resetHistory()">Reset teammate history</button>
-            <button class="btn-secondary" onclick="clearResultsSelection()">Clear winner selection</button>
+            <button class="btn-danger" onclick="resetHistory()">Reset Teammate History</button>
+            <button class="btn-secondary" onclick="clearResultsSelection()">Clear Winner Selection</button>
           </div>
           <div class="toolbar" style="margin-top:10px">
-            <button class="btn-warn" onclick="resetSeasonStats()">Reset season stats</button>
+            <button class="btn-warn" onclick="resetSeasonStats()">Reset Season Stats</button>
             <span></span>
           </div>
         </div>
@@ -112,21 +117,21 @@
     </details>
   </div>
 
-  <div class="card">
+  <div class="card" id="tempPlayerCard" style="display:none">
     <details id="section-temp-player">
-      <summary><span class="summary-title">3) Add one-time player</span><span></span></summary>
+      <summary><span class="summary-title">Add One-Time Player</span><span></span></summary>
       <div class="grid grid-3" style="margin-top:10px">
-        <div><label>New player full name</label><input id="tempName" placeholder="Mike Jones"></div>
-        <div><label>Rate like</label><select id="tempLike"></select></div>
-        <div><label>For today only?</label><select id="tempTodayOnly"><option value="true">Yes</option><option value="false">Keep until removed</option></select></div>
+        <div><label>New Player Full Name</label><input id="tempName" placeholder="Mike Jones"></div>
+        <div><label>Rate Like</label><select id="tempLike"></select></div>
+        <div><label>For Today Only?</label><select id="tempTodayOnly"><option value="true">Yes</option><option value="false">Keep until removed</option></select></div>
       </div>
-      <div style="margin-top:10px"><button class="btn" onclick="addTempPlayer()">Add temp player</button></div>
+      <div style="margin-top:10px"><button class="btn" onclick="addTempPlayer()">Add Temp Player</button></div>
     </details>
   </div>
 
-  <div class="card">
+  <div class="card" id="pairRulesCard" style="display:none">
     <details id="section-pair-rules">
-      <summary><span class="summary-title">4) Pair rules</span><span></span></summary>
+      <summary><span class="summary-title">Pair Rules</span><span></span></summary>
       <div class="grid grid-4" style="margin-top:10px">
         <div><label>Player 1</label><select id="pairP1"></select></div>
         <div><label>Player 2</label><select id="pairP2"></select></div>
@@ -134,8 +139,8 @@
         <div><label>Strength <span class="muted-inline">(0.1–5, typical 0.5–2)</span></label><input id="pairStrength" type="number" min="0.1" max="5" step="0.1" value="1.0"></div>
       </div>
       <div style="margin-top:10px" class="section-actions">
-        <button class="btn" onclick="addPairRule()">Add pair rule</button>
-        <button class="btn-secondary" onclick="clearPairRules()">Clear all pair rules</button>
+        <button class="btn" onclick="addPairRule()">Add Pair Rule</button>
+        <button class="btn-secondary" onclick="clearPairRules()">Clear All Pair Rules</button>
       </div>
       <div id="pairRuleList" class="list" style="margin-top:10px"></div>
     </details>
@@ -143,31 +148,63 @@
 
   <div class="card">
     <details id="section-attendance" open>
-      <summary><span class="summary-title">5) Attendance and player settings</span><span></span></summary>
-      <details id="presentPlayersDetails" style="margin-top:10px">
-        <summary><span class="muted-inline">Present players</span><span class="muted-inline" id="presentCount"></span></summary>
-        <div id="presentPlayersList" class="present-list" style="margin-top:10px"></div>
-      </details>
+      <summary><span class="summary-title">Attendance And Player Settings</span><span></span></summary>
+      <div class="subbox">
+        <details id="presentPlayersDetails">
+          <summary><span class="muted-inline">Present Players</span><span class="muted-inline" id="presentCount"></span></summary>
+          <div id="presentPlayersList" class="present-list" style="margin-top:10px"></div>
+        </details>
+      </div>
+      <div class="subbox">
+        <details id="attendanceTempPlayer">
+          <summary><span class="muted-inline">Add One-Time Player</span><span></span></summary>
+          <div class="grid grid-2" style="margin-top:10px">
+            <div><label>New Player Full Name</label><input id="tempName2" placeholder="Mike Jones"></div>
+            <div><label>Rate Like</label><select id="tempLike2" onchange="loadTempRatingsFromLike()"></select></div>
+          </div>
+          <div class="grid grid-4" style="margin-top:10px">
+            <div><label>Handling</label><input id="tempHandling" type="number" step="0.1" value="3"></div>
+            <div><label>Cutting</label><input id="tempCutting" type="number" step="0.1" value="3"></div>
+            <div><label>Defense</label><input id="tempDefense" type="number" step="0.1" value="3"></div>
+            <div><label>Win/Loss</label><input id="tempWL" type="number" step="0.01" value="0.00"></div>
+          </div>
+          <div style="margin-top:10px"><button class="btn" onclick="addTempPlayerFromInputs()">Add One-Time Player</button></div>
+        </details>
+      </div>
       <div class="grid grid-2" style="margin-top:10px">
-        <div><label>Number of teams</label><input id="numTeams" type="number" min="2" value="3"></div>
-        <div><label>Anti-repeat strength <span class="muted-inline">(0–10, typical 3–6)</span></label><input id="repeatWeight" type="number" min="0" max="10" step="0.5" value="4.0"></div>
+        <div><label>Number Of Teams</label><input id="numTeams" type="number" min="2" value="3"></div>
+        <div><label>Anti-Repeat Strength <span class="muted-inline">(0–10, Typical 3–6)</span></label><input id="repeatWeight" type="number" min="0" max="10" step="0.5" value="4.0"></div>
       </div>
       <div style="margin-top:10px" class="grid grid-2">
-        <div><label>Search players</label><input id="playerSearch" type="text" placeholder="Search by name..." oninput="renderPlayers()"></div>
-        <div><label>Inactive players</label><button id="toggleInactiveBtn" class="btn-secondary" onclick="toggleShowInactive()">Show inactive players</button></div>
+        <div><label>Inactive Players</label><button id="toggleInactiveBtn" class="btn-secondary" onclick="toggleShowInactive()">Show Inactive Players</button></div>
+        <div><label>Clear Attendance</label><button class="btn-warn" onclick="clearAttendance()">Clear Attendance</button></div>
       </div>
-      <div style="margin-top:10px">
-        <button class="btn-warn" onclick="clearAttendance()">Clear attendance</button>
+      <div class="search-row" style="margin-top:10px">
+        <div><label>Search Players</label><input id="playerSearch" type="text" placeholder="Search by name..." oninput="renderPlayers()"></div>
+        <div><label>&nbsp;</label><button class="btn-secondary" style="width:auto" onclick="clearPlayerSearch()">Clear</button></div>
       </div>
       <div id="playerList" class="list" style="margin-top:10px"></div>
     </details>
   </div>
 </div>
 
+<div id="dataPage" style="display:none">
+  <div class="card">
+    <h1>Data</h1>
+    <div class="row">
+      <span class="chip">Players: <strong id="statPlayersData">0</strong></span>
+      <span class="chip">Attending: <strong id="statAttendingData">0</strong></span>
+      <span class="chip">History Pairs: <strong id="statHistoryData">0</strong></span>
+    </div>
+  </div>
+  <div id="dataLoadEdit"></div>
+  <div id="dataPairRules"></div>
+</div>
+
 <div class="stickybar"><div class="inner">
   <button class="btn-success" onclick="generateGame()">Generate game</button>
   <button class="btn" onclick="saveCurrentGame()">Save teams + next game</button>
-  <button class="btn-secondary" onclick="jumpToTeams()">Jump to teams</button>
+  <span></span>
 </div></div>
 
 <script>
@@ -304,14 +341,20 @@ function importCsv(inactive){
   saveState(); renderAll(); alert(`Imported ${rows.length} rows.`);
 }
 function updateStats(){
-  document.getElementById("statPlayers").textContent = state.players.length;
-  document.getElementById("statAttending").textContent = state.players.filter(p => p.attending && p.active).length;
-  document.getElementById("statHistory").textContent = Object.keys(state.history).length;
+  const p = state.players.length;
+  const a = state.players.filter(p => p.attending && p.active).length;
+  const h = Object.keys(state.history).length;
+  document.getElementById("statPlayers").textContent = p;
+  document.getElementById("statAttending").textContent = a;
+  document.getElementById("statHistory").textContent = h;
+  const pd = document.getElementById("statPlayersData"); if(pd) pd.textContent = p;
+  const ad = document.getElementById("statAttendingData"); if(ad) ad.textContent = a;
+  const hd = document.getElementById("statHistoryData"); if(hd) hd.textContent = h;
 }
 function updateSelectOptions(){
   const allPlayers = [...state.players].sort((a,b)=>a.fullName.localeCompare(b.fullName));
   const present = presentPlayers();
-  const map = {"tempLike": allPlayers, "pairP1": present, "pairP2": present};
+  const map = {"tempLike": allPlayers, "tempLike2": allPlayers, "pairP1": present, "pairP2": present};
   Object.keys(map).forEach(id => {
     const sel = document.getElementById(id), current = sel.value;
     sel.innerHTML = '<option value="">Select...</option>';
@@ -402,8 +445,54 @@ function renderTeams(){
 }
 function toggleShowInactive(){ state.showInactive = !state.showInactive; saveState(); updateShowInactiveButton(); renderPlayers(); }
 function updateShowInactiveButton(){ const btn = document.getElementById("toggleInactiveBtn"); btn.textContent = state.showInactive ? "Hide inactive players" : "Show inactive players"; }
-function jumpToTeams(){ document.getElementById("section-current-game").open = true; document.getElementById("teamsSection").scrollIntoView({behavior:"smooth", block:"start"}); }
-function renderAll(){ updateStats(); updateSelectOptions(); renderPresentList(); renderPairRules(); updateShowInactiveButton(); renderPlayers(); renderTeams(); }
+function clearPlayerSearch(){
+  const el = document.getElementById("playerSearch");
+  if(el) el.value = "";
+  renderPlayers();
+}
+function loadTempRatingsFromLike(){
+  const likeId = Number(document.getElementById("tempLike2").value);
+  if(!likeId) return;
+  const src = playerById(likeId);
+  if(!src) return;
+  document.getElementById("tempHandling").value = Number(src.handling || 3);
+  document.getElementById("tempCutting").value = Number(src.cutting || 3);
+  document.getElementById("tempDefense").value = Number(src.defense || 3);
+  document.getElementById("tempWL").value = Number(src.winLossRating || 0).toFixed(2);
+}
+function addTempPlayerFromInputs(){
+  const fullName = normalizeName(document.getElementById("tempName2").value);
+  if(!fullName){ alert("Enter a player name."); return; }
+  if(state.players.some(p => p.fullName.toLowerCase() === fullName.toLowerCase())){ alert("That player already exists."); return; }
+  const parts = splitName(fullName);
+  state.players.push({
+    id: state.nextId++, fullName, firstName: parts.first, lastName: parts.last,
+    handling: Number(document.getElementById("tempHandling").value || 3),
+    cutting: Number(document.getElementById("tempCutting").value || 3),
+    defense: Number(document.getElementById("tempDefense").value || 3),
+    combined: 0,
+    winLossRating: Number(document.getElementById("tempWL").value || 0),
+    active: true, attending: true, injuryPct: 1, temporary: true, tempTodayOnly: false, copiedFromId: null, gamesPlayed: 0, wins: 0, losses: 0
+  });
+  document.getElementById("tempName2").value = "";
+  saveState(); renderAll();
+}
+function showPage(page){
+  document.getElementById("mainPage").style.display = page === "main" ? "block" : "none";
+  document.getElementById("dataPage").style.display = page === "data" ? "block" : "none";
+  if(page === "data"){
+    syncDataPage();
+  }
+}
+function syncDataPage(){
+  const loadEditSrc = document.getElementById("loadEditCard");
+  const pairRulesSrc = document.getElementById("pairRulesCard");
+  const loadEditDst = document.getElementById("dataLoadEdit");
+  const pairRulesDst = document.getElementById("dataPairRules");
+  if(loadEditSrc && loadEditDst) loadEditDst.innerHTML = loadEditSrc.innerHTML.replace('style="display:none"','');
+  if(pairRulesSrc && pairRulesDst) pairRulesDst.innerHTML = pairRulesSrc.innerHTML.replace('style="display:none"','');
+}
+function renderAll(){ updateStats(); updateSelectOptions(); renderPresentList(); renderPairRules(); updateShowInactiveButton(); renderPlayers(); renderTeams(); syncDataPage(); }
 function clearAttendance(){ state.players.forEach(p => p.attending = false); saveState(); renderAll(); }
 function toggleAttendance(id){ const p = playerById(id); if(!p) return; if(!p.active) p.active = true; p.attending = !p.attending; saveState(); renderAll(); }
 function toggleActive(id){ const p = playerById(id); if(!p) return; p.active = !p.active; if(!p.active) p.attending = false; saveState(); renderAll(); }
@@ -428,7 +517,7 @@ function addPairRule(){ const p1 = Number(document.getElementById("pairP1").valu
 function removePairRule(idx){ state.pairRules.splice(idx, 1); saveState(); renderAll(); }
 function clearPairRules(){ state.pairRules = []; saveState(); renderAll(); }
 function resetSeasonStats(){
-  if(!confirm("Reset season stats? This clears Games Played, Wins, and Losses but keeps ratings and roster data.")) return;
+  if(!confirm("Reset Season Stats? This clears Games Played, Wins, and Losses but keeps ratings and roster data.")) return;
   state.players.forEach(p => {
     p.gamesPlayed = 0;
     p.wins = 0;
@@ -437,7 +526,7 @@ function resetSeasonStats(){
   saveState();
   renderAll();
 }
-function resetHistory(){ if(!confirm("Reset teammate history?")) return; state.history = {}; saveState(); renderAll(); }
+function resetHistory(){ if(!confirm("Reset Teammate History?")) return; state.history = {}; saveState(); renderAll(); }
 function activeAttendingPlayers(){ return state.players.filter(p => p.active && p.attending); }
 function teamStats(team){ return {handling: team.reduce((s,p)=>s+effectiveHandling(p),0), cutting: team.reduce((s,p)=>s+effectiveCutting(p),0), defense: team.reduce((s,p)=>s+effectiveDefense(p),0), overall: team.reduce((s,p)=>s+overall(p),0), count: team.length}; }
 function teamStrength(team){ return team.reduce((s,p)=>s+overall(p),0); }

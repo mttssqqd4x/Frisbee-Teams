@@ -364,3 +364,43 @@ This version makes the attendance list more streamlined:
 - added guidance ranges next to:
   - Anti-repeat strength: 0–10, typical 3–6
   - Pair rule strength: 0.1–5, typical 0.5–2
+
+
+## Main Layout Changes In v13
+
+This version reorganizes the app to make sideline use cleaner.
+
+### Header and navigation
+- removed the Jump To Teams button
+- added a **Data** button at the top right
+- added a **Main** button so you can switch back
+
+### Section headers
+- removed the numbers from section headers
+- changed headers to title case
+
+### Attendance And Player Settings changes
+- removed the subtitle line under each player name in the attendance list
+- added a clear button for the attendance search box
+- put a visible box around the Present Players subsection
+- moved Add One-Time Player into Attendance And Player Settings as a boxed collapsible subsection
+
+### Add One-Time Player changes
+- removed the Only For Today option
+- now defaults to keep until removed
+- starts manual ratings at:
+  - Handling = 3
+  - Cutting = 3
+  - Defense = 3
+  - Win/Loss = 0.00
+- selecting a Rate Like player loads that player's ratings into the inputs, and you can still edit them before adding the player
+
+### Data page
+The Data page contains:
+- Players count
+- Attending count
+- History Pairs count
+- Load Or Edit Players tools
+- Pair Rules tools
+
+This keeps the main page focused on attendance, teams, and gameplay.
