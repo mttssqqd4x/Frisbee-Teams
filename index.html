@@ -314,6 +314,110 @@ function parseCsv(text){
     return obj;
   });
 }
+
+function getCsvText(inactive, sourceId){
+  const defaultId = inactive ? "inactiveCsv" : "activeCsv";
+  const candidates = [];
+  if(sourceId) candidates.push(sourceId);
+  candidates.push(defaultId);
+
+  for(const id of candidates){
+    const matches = document.querySelectorAll(`#${id}`);
+    for(let i = matches.length - 1; i >= 0; i--){
+      const val = (matches[i].value || "").trim();
+      if(val) return val;
+    }
+  }
+  return "";
+}
+function parseImportRows(inactive, sourceId){
+  const raw = getCsvText(inactive, sourceId);
+  if(!raw) return {rows: [], empty: true};
+  return {rows: parseCsv(raw), empty: false};
+}
+function describeImportChanges(rows, inactive){
+  const changes = [];
+  let adds = 0, updates = 0;
+  rows.forEach(row => {
+    const first = (row["First Name"] || "").trim();
+    const last = (row["Last Name"] || "").trim();
+    const full = normalizeName(`${first} ${last}`);
+    if(!full) return;
+    const existing = state.players.find(p => p.fullName.toLowerCase() === full.toLowerCase());
+    const nextVals = {
+      handling: Number(row["Handling"] || 0),
+      cutting: Number(row["Cutting"] || 0),
+      defense: Number(row["Defense"] || 0),
+      winLossRating: Number(row["Win/Loss"] || row["Win/Loss Rating"] || row["WinLossRating"] || 0),
+      active: !inactive
+    };
+    if(!existing){
+      adds++;
+      changes.push({
+        type: "Add",
+        name: full,
+        details: `new player · H ${nextVals.handling} · C ${nextVals.cutting} · D ${nextVals.defense} · W/L ${nextVals.winLossRating.toFixed(2)} · ${nextVals.active ? "active" : "inactive"}`
+      });
+    } else {
+      updates++;
+      const parts = [];
+      if(Number(existing.handling || 0) !== nextVals.handling) parts.push(`H ${Number(existing.handling || 0)} → ${nextVals.handling}`);
+      if(Number(existing.cutting || 0) !== nextVals.cutting) parts.push(`C ${Number(existing.cutting || 0)} → ${nextVals.cutting}`);
+      if(Number(existing.defense || 0) !== nextVals.defense) parts.push(`D ${Number(existing.defense || 0)} → ${nextVals.defense}`);
+      if(Number(existing.winLossRating || 0) !== nextVals.winLossRating) parts.push(`W/L ${Number(existing.winLossRating || 0).toFixed(2)} → ${nextVals.winLossRating.toFixed(2)}`);
+      if(Boolean(existing.active) !== nextVals.active) parts.push(`${existing.active ? "active" : "inactive"} → ${nextVals.active ? "active" : "inactive"}`);
+      if(parts.length === 0) parts.push("no rating/status changes");
+      changes.push({type: "Update", name: full, details: parts.join(" · ")});
+    }
+  });
+  return {changes, adds, updates};
+}
+function previewCsv(inactive, sourceId){
+  const parsed = parseImportRows(inactive, sourceId);
+  if(parsed.empty){ alert("Paste CSV first."); return; }
+  const result = describeImportChanges(parsed.rows, inactive);
+  const box = document.getElementById("importPreviewBox");
+  const summary = document.getElementById("importPreviewSummary");
+  const list = document.getElementById("importPreviewList");
+  const boxData = document.getElementById("importPreviewBoxData");
+  const summaryData = document.getElementById("importPreviewSummaryData");
+  const listData = document.getElementById("importPreviewListData");
+
+  if(box) box.style.display = "block";
+  if(boxData) boxData.style.display = "block";
+  const msg = `${result.changes.length} rows scanned · ${result.adds} new · ${result.updates} existing players matched`;
+  if(summary) summary.textContent = msg;
+  if(summaryData) summaryData.textContent = msg;
+  if(list) list.innerHTML = "";
+  if(listData) listData.innerHTML = "";
+
+  if(!result.changes.length){
+    if(list) list.innerHTML = '<div class="small">No valid player rows found.</div>';
+    if(listData) listData.innerHTML = '<div class="small">No valid player rows found.</div>';
+    return;
+  }
+
+  result.changes.forEach(item => {
+    const html = `<div class="player"><div><div class="player-name">${item.type}: ${item.name}</div><div class="small">${item.details}</div></div></div>`;
+    if(list){
+      const div = document.createElement("div");
+      div.innerHTML = html;
+      list.appendChild(div.firstChild);
+    }
+    if(listData){
+      const div = document.createElement("div");
+      div.innerHTML = html;
+      listData.appendChild(div.firstChild);
+    }
+  });
+}
+function closeImportPreview(){
+  const box = document.getElementById("importPreviewBox");
+  const boxData = document.getElementById("importPreviewBoxData");
+  if(box) box.style.display = "none";
+  if(boxData) boxData.style.display = "none";
+}
+
 function importCsv(inactive, sourceId){
   const text = getCsvText(inactive, sourceId);
   if(!text){ alert("Paste CSV first."); return; }

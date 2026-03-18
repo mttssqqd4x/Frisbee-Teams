@@ -438,3 +438,12 @@ Now:
 - Import Active CSV reads directly from the Active CSV box on the Data page
 - Preview Inactive CSV reads directly from the Inactive CSV box on the Data page
 - Import Inactive CSV reads directly from the Inactive CSV box on the Data page
+
+
+## Fix In v17
+
+This version restores the missing CSV import helper functions that the Data page import and preview buttons depend on.
+
+That fixes:
+- Paste CSV first appearing incorrectly after pasting into the Data page textareas
+- Data page preview/import not reading from the visible CSV boxes reliably
