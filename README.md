@@ -509,3 +509,16 @@ Changes:
 - Main/Data page switching is more robust
 
 This is intended to fix cases where the Generate Game button stopped responding after the recent layout changes.
+
+
+## Fix In v22
+
+This version fixes Pair Rules on the Data page.
+
+The issue was that the Data page was showing a cloned Pair Rules section, but the Add Pair Rule button was still reading from the hidden original controls.
+
+Now the Data-page Pair Rules controls:
+- sync their values back to the source controls
+- add rules correctly
+- clear rules correctly
+- keep the rule list refreshed on the Data page
