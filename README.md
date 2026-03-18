@@ -438,3 +438,16 @@ Now:
 - Import Active CSV reads directly from the Active CSV box on the Data page
 - Preview Inactive CSV reads directly from the Inactive CSV box on the Data page
 - Import Inactive CSV reads directly from the Inactive CSV box on the Data page
+
+
+## Fix In v17
+
+This version restores the missing CSV helper functions.
+
+It fixes:
+- Import Active CSV button
+- Import Inactive CSV button
+- Preview Active CSV button
+- Preview Inactive CSV button
+
+on the Data page.

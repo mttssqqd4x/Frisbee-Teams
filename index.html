@@ -303,6 +303,64 @@ function expectedWinProb(teamStrength, oppStrength){
   return 1 / (1 + Math.pow(10, ((oppStrength - teamStrength) / SCALE)));
 }
 function pairKey(a,b){ return a < b ? `${a}|${b}` : `${b}|${a}`; }
+
+function getCsvText(inactive, sourceId){
+  const defaultId = inactive ? "inactiveCsv" : "activeCsv";
+  const preferred = sourceId ? document.getElementById(sourceId) : null;
+  const fallback = document.getElementById(defaultId);
+  const value = (preferred && preferred.value !== undefined ? preferred.value : (fallback ? fallback.value : "")) || "";
+  return value.trim();
+}
+function parseImportRows(inactive, sourceId){
+  const csvText = getCsvText(inactive, sourceId);
+  if(!csvText) return {rows: [], empty: true};
+  return {rows: parseCsv(csvText), empty: false};
+}
+function previewCsv(inactive, sourceId){
+  const parsed = parseImportRows(inactive, sourceId);
+  if(parsed.empty){
+    alert("Paste CSV first.");
+    return;
+  }
+
+  let adds = 0;
+  let updates = 0;
+  const previewLines = [];
+
+  parsed.rows.forEach(row => {
+    const first = (row["First Name"] || "").trim();
+    const last = (row["Last Name"] || "").trim();
+    const full = normalizeName(`${first} ${last}`);
+    if(!full) return;
+
+    const existing = state.players.find(p => p.fullName.toLowerCase() === full.toLowerCase());
+    const nextHandling = Number(row["Handling"] || 0);
+    const nextCutting = Number(row["Cutting"] || 0);
+    const nextDefense = Number(row["Defense"] || 0);
+    const nextWL = Number(row["Win/Loss"] || row["Win/Loss Rating"] || row["WinLossRating"] || 0);
+    const nextStatus = inactive ? "inactive" : "active";
+
+    if(!existing){
+      adds++;
+      previewLines.push(`ADD: ${full} · H ${nextHandling} · C ${nextCutting} · D ${nextDefense} · W/L ${nextWL.toFixed(2)} · ${nextStatus}`);
+    } else {
+      updates++;
+      const changes = [];
+      if(Number(existing.handling || 0) !== nextHandling) changes.push(`H ${Number(existing.handling || 0)}→${nextHandling}`);
+      if(Number(existing.cutting || 0) !== nextCutting) changes.push(`C ${Number(existing.cutting || 0)}→${nextCutting}`);
+      if(Number(existing.defense || 0) !== nextDefense) changes.push(`D ${Number(existing.defense || 0)}→${nextDefense}`);
+      if(Number(existing.winLossRating || 0) !== nextWL) changes.push(`W/L ${Number(existing.winLossRating || 0).toFixed(2)}→${nextWL.toFixed(2)}`);
+      if(Boolean(existing.active) !== (!inactive)) changes.push(`${existing.active ? "active" : "inactive"}→${nextStatus}`);
+      previewLines.push(`UPDATE: ${full}${changes.length ? " · " + changes.join(" · ") : " · no rating/status changes"}`);
+    }
+  });
+
+  const summary = `${parsed.rows.length} rows scanned · ${adds} new · ${updates} matched`;
+  const details = previewLines.slice(0, 40).join("\n");
+  const more = previewLines.length > 40 ? `\n...and ${previewLines.length - 40} more` : "";
+  alert(summary + (details ? "\n\n" + details + more : ""));
+}
+
 function parseCsv(text){
   const lines = text.trim().split(/\r?\n/).filter(Boolean);
   if(lines.length < 2) return [];
