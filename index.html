@@ -204,8 +204,8 @@
 </div>
 
 <div class="stickybar"><div class="inner">
-  <button class="btn-success" onclick="generateGame()">Generate Game</button>
-  <button class="btn btn-nextline" onclick="saveCurrentGame()">Save Teams<br>+ Next Game</button>
+  <button type="button" class="btn-success" onclick="generateGame()">Generate Game</button>
+  <button type="button" class="btn btn-nextline" onclick="saveCurrentGame()">Save Teams<br>+ Next Game</button>
 </div></div>
 
 <script>
@@ -591,17 +591,19 @@ function openCurrentGameAndScrollTop(){
   window.scrollTo({top: 0, behavior: "smooth"});
 }
 function showPage(page){
-  document.getElementById("mainPage").style.display = page === "main" ? "block" : "none";
-  document.getElementById("dataPage").style.display = page === "data" ? "block" : "none";
+  const mainPage = document.getElementById("mainPage");
+  const dataPage = document.getElementById("dataPage");
   const sticky = document.querySelector(".stickybar");
-  if(sticky) sticky.style.display = page === "data" ? "none" : "block";
   const mainBtn = document.getElementById("mainTabBtn");
   const dataBtn = document.getElementById("dataTabBtn");
+
+  if(mainPage) mainPage.style.display = page === "main" ? "block" : "none";
+  if(dataPage) dataPage.style.display = page === "data" ? "block" : "none";
+  if(sticky) sticky.style.display = page === "data" ? "none" : "block";
   if(mainBtn) mainBtn.classList.toggle("tab-active", page === "main");
   if(dataBtn) dataBtn.classList.toggle("tab-active", page === "data");
-  if(page === "data"){
-    syncDataPage();
-  }
+
+  if(page === "data") syncDataPage();
 }
 function syncDataPage(){
   const loadEditSrc = document.getElementById("loadEditCard");
@@ -715,13 +717,24 @@ function optimizeTeams(teams, repeatWeight){
   return {teams: best, score: bestScore};
 }
 function generateGame(){
-  const players = activeAttendingPlayers(), numTeams = Math.max(2, Number(document.getElementById("numTeams").value || 2)), repeatWeight = Number(document.getElementById("repeatWeight").value || 4);
-  if(players.length < numTeams){ alert("Not enough attending players for that many teams."); return; }
+  const numTeamsEl = document.getElementById("numTeams");
+  const repeatWeightEl = document.getElementById("repeatWeight");
+  const players = activeAttendingPlayers();
+  const numTeams = Math.max(2, Number((numTeamsEl && numTeamsEl.value) || 2));
+  const repeatWeight = Number((repeatWeightEl && repeatWeightEl.value) || 4);
+
+  if(players.length < numTeams){
+    alert("Not enough attending players for that many teams.");
+    return;
+  }
+
   let best = null;
   for(let k=0;k<60;k++){
-    const initial = makeInitialTeams(players, numTeams), candidate = optimizeTeams(initial, repeatWeight);
+    const initial = makeInitialTeams(players, numTeams);
+    const candidate = optimizeTeams(initial, repeatWeight);
     if(!best || candidate.score < best.score) best = candidate;
   }
+
   state.currentGame = best;
   state.selectedWinnerIndex = null;
   saveState();
@@ -789,6 +802,10 @@ function saveCurrentGame(){
   openCurrentGameAndScrollTop();
   alert("Saved history and generated next game.");
 }
-renderAll();
+function initializeApp(){
+  renderAll();
+  showPage('main');
+}
+initializeApp();
 </script>
 </body></html>

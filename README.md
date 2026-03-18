@@ -496,3 +496,16 @@ Changes:
   - `+ Next Game`
 
 This keeps the button wrapping consistent on smaller screens.
+
+
+## Fix In v21
+
+This version hardens the Main/Data page initialization and Generate Game button behavior.
+
+Changes:
+- Generate Game and Save Teams buttons explicitly use `type="button"`
+- app now initializes by rendering and then forcing the Main page active
+- Generate Game now reads Number Of Teams and Anti-Repeat Strength more defensively
+- Main/Data page switching is more robust
+
+This is intended to fix cases where the Generate Game button stopped responding after the recent layout changes.
