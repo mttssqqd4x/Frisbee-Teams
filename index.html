@@ -218,10 +218,7 @@
             <button class="btn" onclick="addPairRuleFromMain()">Add Pair Rule</button>
             <button class="btn-secondary" onclick="lockPairFromMain()">Lock Pair</button>
           </div>
-          <div style="margin-top:10px" class="section-actions">
-            <button class="btn-secondary" onclick="clearPairRules()">Clear All Pair Rules</button>
-            <span></span>
-          </div>
+
           <div id="pairRuleListMain" class="list" style="margin-top:10px"></div>
         </details>
       </div>
@@ -589,8 +586,9 @@ function renderPairRules(){
     const p1 = playerById(r.player1Id), p2 = playerById(r.player2Id);
     const typeLabel = r.type === "together" ? "Together" : "Apart";
     const colorClass = r.type === "together" ? "pair-card-together" : "pair-card-apart";
-    const strength = Number(r.strength || 1).toFixed(1);
-    const html = `<div class="player ${colorClass}"><div><div class="player-name">${p1?.fullName || "Unknown"} ↔ ${p2?.fullName || "Unknown"}</div><div class="small">${typeLabel} · Strength ${strength}</div></div><div class="toggle-wrap"><button class="btn-danger" onclick="removePairRule(${idx})">Remove</button></div></div>`;
+    const isLocked = Number(r.strength || 0) >= 999;
+    const detailLabel = isLocked ? `Locked ${typeLabel}` : `${typeLabel} · Strength ${Number(r.strength || 1).toFixed(1)}`;
+    const html = `<div class="player ${colorClass}"><div><div class="player-name">${p1?.fullName || "Unknown"} ↔ ${p2?.fullName || "Unknown"}</div><div class="small">${detailLabel}</div></div><div class="toggle-wrap"><button class="btn-danger" onclick="removePairRule(${idx})">Remove</button></div></div>`;
     if(box){
       const d1 = document.createElement("div");
       d1.innerHTML = html;
@@ -950,8 +948,8 @@ function closeModal(evt, id){
 function lockPairFromMain(){
   const p1 = document.getElementById("pairP1Main")?.value || null;
   const p2 = document.getElementById("pairP2Main")?.value || null;
-  const strength = document.getElementById("pairStrengthMain")?.value || null;
-  addPairRule(p1, p2, "together", strength);
+  const type = document.getElementById("pairTypeMain")?.value || "together";
+  addPairRule(p1, p2, type, 999);
 }
 function renderAll(){
   state.players.forEach(p => {

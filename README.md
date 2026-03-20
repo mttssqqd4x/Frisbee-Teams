@@ -665,3 +665,19 @@ How it works now:
 - in a 4-team game: each winner-vs-loser update uses K / 3
 
 This keeps the total rating movement from inflating just because more teams are in the game.
+
+
+## Pair Rules Changes In v31
+
+This version updates the Main-page Pair Rules controls.
+
+Changes:
+- removed the Clear All Pair Rules button
+- added separate lock buttons:
+  - Lock Together
+  - Lock Apart
+- locked pair rules now display as:
+  - Locked Together
+  - Locked Apart
+- locked pair rules do not show strength
+- regular non-locked pair rules still show their strength
