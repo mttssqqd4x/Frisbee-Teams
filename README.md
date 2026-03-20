@@ -615,3 +615,19 @@ How Auto-Balance Check works:
 - computes the spread of the group
 - flags players whose overall is far enough from the average
 - this helps identify ratings that may deserve review
+
+
+## Fixes In v28
+
+Changes:
+- K-Factor is now a text box instead of a slider
+- Next Team in Simulate Teams now generates a more meaningfully different simulated set
+- new/imported players now get an initial rating-history snapshot automatically
+- missing rating-history snapshots are backfilled during render
+
+Why sample counts were different:
+- the Rating Changes modal counts the number of saved Win/Loss history snapshots for each player
+- some players had fewer snapshots because they were added later or imported before rating-history tracking existed
+- that meant sample counts could differ even if players had played the same number of games
+
+This version reduces that mismatch by creating starting snapshots for imported and newly added players and backfilling missing histories.

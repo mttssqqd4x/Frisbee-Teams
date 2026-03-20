@@ -115,7 +115,7 @@
           </div>
           <div style="margin-bottom:10px">
             <label>K-Factor: <strong id="kFactorLabel">0.08</strong></label>
-            <input id="kFactorSlider" type="range" min="0.01" max="0.25" step="0.01" value="0.08" oninput="syncKFactor()">
+            <input id="kFactorSlider" type="number" min="0.01" max="0.25" step="0.01" value="0.08" oninput="syncKFactor()">
           </div>
           <div class="toolbar" style="margin-bottom:10px">
             <button class="btn-secondary" onclick="openRatingsModal()">View Player Ratings</button>
@@ -529,8 +529,8 @@ function importCsv(inactive, sourceId){
       active: !inactive, attending: false, injuryPct: 1,
       temporary: false, tempTodayOnly: false, copiedFromId: null, gamesPlayed: Number(row["Games Played"] || 0), wins: Number(row["Wins"] || 0), losses: Number(row["Losses"] || 0)
     };
-    if(existing) Object.assign(existing, payload, {id: existing.id});
-    else { payload.id = state.nextId++; state.players.push(payload); }
+    if(existing) { Object.assign(existing, payload, {id: existing.id}); if(!state.ratingHistory[existing.id]) state.ratingHistory[existing.id] = [{ts: Date.now(), value: Number(existing.winLossRating || 0)}]; }
+    else { payload.id = state.nextId++; state.players.push(payload); state.ratingHistory[payload.id] = [{ts: Date.now(), value: Number(payload.winLossRating || 0)}]; }
   });
   saveState(); renderAll(); alert(`Imported ${rows.length} rows.`);
 }
@@ -675,8 +675,9 @@ function addTempPlayerFromInputs(){
   if(!fullName){ alert("Enter a player name."); return; }
   if(state.players.some(p => p.fullName.toLowerCase() === fullName.toLowerCase())){ alert("That player already exists."); return; }
   const parts = splitName(fullName);
+  const newId = state.nextId++;
   state.players.push({
-    id: state.nextId++, fullName, firstName: parts.first, lastName: parts.last,
+    id: newId, fullName, firstName: parts.first, lastName: parts.last,
     handling: Number(document.getElementById("tempHandling").value || 3),
     cutting: Number(document.getElementById("tempCutting").value || 3),
     defense: Number(document.getElementById("tempDefense").value || 3),
@@ -684,6 +685,7 @@ function addTempPlayerFromInputs(){
     winLossRating: 0.00,
     active: true, attending: true, injuryPct: 1, temporary: true, tempTodayOnly: false, copiedFromId: null, gamesPlayed: 0, wins: 0, losses: 0
   });
+  state.ratingHistory[newId] = [{ts: Date.now(), value: 0.00}];
   document.getElementById("tempName2").value = "";
   saveState(); renderAll();
 }
@@ -808,13 +810,24 @@ function renderSimulationFromSeed(seedOffset){
   const numTeams = Math.max(2, Number((document.getElementById("numTeams") && document.getElementById("numTeams").value) || 2));
   const repeatWeight = Number((document.getElementById("repeatWeight") && document.getElementById("repeatWeight").value) || 4);
   if(players.length < numTeams){ alert("Not enough attending players for that many teams."); return false; }
+
+  const originalRandom = Math.random;
+  let seed = (Date.now() + seedOffset * 7919) % 2147483647;
+  Math.random = function(){
+    seed = (seed * 48271) % 2147483647;
+    return seed / 2147483647;
+  };
+
   let best = null;
-  const tries = 20 + (seedOffset % 10);
+  const tries = 60;
   for(let k=0;k<tries;k++){
     const initial = makeInitialTeams(players, numTeams);
     const candidate = optimizeTeams(initial, repeatWeight);
     if(!best || candidate.score < best.score) best = candidate;
   }
+
+  Math.random = originalRandom;
+
   document.getElementById("simulateModalContent").innerHTML = best.teams.map((team, idx) => {
     const stats = teamStats(team);
     return `<div class="teambox" style="margin-bottom:10px"><div class="teamhead"><strong>Team ${idx+1}</strong><span class="small">${stats.overall.toFixed(2)}</span></div>${team.map(p => `<div class="row" style="justify-content:space-between"><span>${p.fullName}</span><span class="small">${overall(p).toFixed(2)}</span></div>`).join('')}</div>`;
@@ -873,6 +886,11 @@ function lockPairFromMain(){
   addPairRule(p1, p2, "together", strength);
 }
 function renderAll(){
+  state.players.forEach(p => {
+    if(!state.ratingHistory[p.id] || !state.ratingHistory[p.id].length){
+      state.ratingHistory[p.id] = [{ts: Date.now(), value: Number(p.winLossRating || 0)}];
+    }
+  });
   updateStats(); updateSelectOptions(); renderPresentList(); renderPairRules(); updateShowInactiveButton(); renderPlayers(); renderTeams();
   const wh = document.getElementById("weightHandling"); if(wh) wh.value = Number(state.weightHandling ?? 0.35).toFixed(2);
   const wc = document.getElementById("weightCutting"); if(wc) wc.value = Number(state.weightCutting ?? 0.35).toFixed(2);
@@ -892,8 +910,9 @@ function addTempPlayer(){
   if(!fullName || !likeId){ alert("Enter a name and choose a player to copy."); return; }
   if(state.players.some(p => p.fullName.toLowerCase() === fullName.toLowerCase())){ alert("That player already exists."); return; }
   const src = playerById(likeId), parts = splitName(fullName);
+  const newId = state.nextId++;
   state.players.push({
-    id: state.nextId++, fullName, firstName: parts.first, lastName: parts.last,
+    id: newId, fullName, firstName: parts.first, lastName: parts.last,
     handling: src.handling, cutting: src.cutting, defense: src.defense, combined: 0,
     winLossRating: Number(src.winLossRating || 0),
     active: true, attending: true, injuryPct: 1, temporary: true, tempTodayOnly: todayOnly, copiedFromId: src.id, gamesPlayed: 0, wins: 0, losses: 0
