@@ -566,3 +566,25 @@ Changes:
 - rule cards are color-coded:
   - green for Together
   - red for Apart
+
+
+## Data Page Tools In v26
+
+This version adds the following tools to the Data page:
+- Set Weight text boxes for Handling, Cutting, and Defense
+- View Player Ratings
+- Show Rating Changes
+- Simulate Teams
+- Auto-Balance Check
+- K-Factor slider
+
+It also adds:
+- Lock Pair button in the Main-page Pair Rules subsection
+
+Notes:
+- weights affect the base overall formula used for balancing
+- K-Factor affects how strongly win/loss ratings move after recorded results
+- View Player Ratings sorts players by current effective overall
+- Show Rating Changes uses saved Win/Loss history snapshots
+- Simulate Teams previews balanced teams without replacing the current game
+- Auto-Balance Check highlights obvious outliers for review

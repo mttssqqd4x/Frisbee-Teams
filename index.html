@@ -48,6 +48,12 @@
     .btn-nextline{line-height:1.15}
     .pair-card-together{background:#052e16;border-color:#14532d}
     .pair-card-apart{background:#450a0a;border-color:#7f1d1d}
+    .modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.65);display:none;align-items:center;justify-content:center;padding:16px;z-index:50}
+    .modal-card{width:min(760px,100%);max-height:85vh;overflow:auto;background:var(--card);border:1px solid var(--border);border-radius:16px;padding:14px}
+    .three-col{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+    @media (max-width:700px){.three-col{grid-template-columns:1fr}}
+    .pill{display:inline-block;padding:4px 8px;border-radius:999px;border:1px solid var(--border);background:var(--card2);font-size:.8rem;color:var(--muted)}
+    .good{color:#86efac}.bad{color:#fca5a5}.warn2{color:#fde68a}
   </style>
 </head>
 <body>
@@ -98,6 +104,24 @@
       </div>
       <div class="grid grid-2">
         <div>
+          <div class="hr"></div>
+          <div class="three-col" style="margin-bottom:10px">
+            <div><label>Set Weight: Handling</label><input id="weightHandling" type="number" step="0.01" value="0.35" oninput="syncWeights()"></div>
+            <div><label>Set Weight: Cutting</label><input id="weightCutting" type="number" step="0.01" value="0.35" oninput="syncWeights()"></div>
+            <div><label>Set Weight: Defense</label><input id="weightDefense" type="number" step="0.01" value="0.30" oninput="syncWeights()"></div>
+          </div>
+          <div style="margin-bottom:10px">
+            <label>K-Factor <span class="muted-inline" id="kFactorLabel">0.08</span></label>
+            <input id="kFactorSlider" type="range" min="0.01" max="0.25" step="0.01" value="0.08" oninput="syncKFactor()">
+          </div>
+          <div class="toolbar" style="margin-bottom:10px">
+            <button class="btn-secondary" onclick="openRatingsModal()">View Player Ratings</button>
+            <button class="btn-secondary" onclick="openTrendModal()">Show Rating Changes</button>
+          </div>
+          <div class="toolbar" style="margin-bottom:10px">
+            <button class="btn-secondary" onclick="simulateTeams()">Simulate Teams</button>
+            <button class="btn-secondary" onclick="autoBalanceCheck()">Auto-Balance Check</button>
+          </div>
           <label>Backup / Restore</label>
           <div class="toolbar">
             <button class="btn-secondary" onclick="downloadState()">Export Backup JSON</button>
@@ -189,7 +213,11 @@
           </div>
           <div style="margin-top:10px" class="section-actions">
             <button class="btn" onclick="addPairRuleFromMain()">Add Pair Rule</button>
+            <button class="btn-secondary" onclick="lockPairFromMain()">Lock Pair</button>
+          </div>
+          <div style="margin-top:10px" class="section-actions">
             <button class="btn-secondary" onclick="clearPairRules()">Clear All Pair Rules</button>
+            <span></span>
           </div>
           <div id="pairRuleListMain" class="list" style="margin-top:10px"></div>
         </details>
@@ -222,6 +250,46 @@
   
 </div>
 
+<div id="ratingsModal" class="modal-backdrop" onclick="closeModal(event, 'ratingsModal')">
+  <div class="modal-card" onclick="event.stopPropagation()">
+    <div class="row" style="justify-content:space-between;align-items:center">
+      <h2 style="margin:0">Player Ratings</h2>
+      <button class="btn-secondary" style="width:auto" onclick="hideModal('ratingsModal')">Close</button>
+    </div>
+    <div id="ratingsModalContent" style="margin-top:10px"></div>
+  </div>
+</div>
+
+<div id="trendModal" class="modal-backdrop" onclick="closeModal(event, 'trendModal')">
+  <div class="modal-card" onclick="event.stopPropagation()">
+    <div class="row" style="justify-content:space-between;align-items:center">
+      <h2 style="margin:0">Rating Changes</h2>
+      <button class="btn-secondary" style="width:auto" onclick="hideModal('trendModal')">Close</button>
+    </div>
+    <div id="trendModalContent" style="margin-top:10px"></div>
+  </div>
+</div>
+
+<div id="simulateModal" class="modal-backdrop" onclick="closeModal(event, 'simulateModal')">
+  <div class="modal-card" onclick="event.stopPropagation()">
+    <div class="row" style="justify-content:space-between;align-items:center">
+      <h2 style="margin:0">Simulated Teams</h2>
+      <button class="btn-secondary" style="width:auto" onclick="hideModal('simulateModal')">Close</button>
+    </div>
+    <div id="simulateModalContent" style="margin-top:10px"></div>
+  </div>
+</div>
+
+<div id="balanceModal" class="modal-backdrop" onclick="closeModal(event, 'balanceModal')">
+  <div class="modal-card" onclick="event.stopPropagation()">
+    <div class="row" style="justify-content:space-between;align-items:center">
+      <h2 style="margin:0">Auto-Balance Check</h2>
+      <button class="btn-secondary" style="width:auto" onclick="hideModal('balanceModal')">Close</button>
+    </div>
+    <div id="balanceModalContent" style="margin-top:10px"></div>
+  </div>
+</div>
+
 <div class="stickybar"><div class="inner">
   <button type="button" class="btn-success" onclick="generateGame()">Generate Game</button>
   <button type="button" class="btn btn-nextline" onclick="saveCurrentGame()">Save Teams<br>+ Next Game</button>
@@ -229,7 +297,7 @@
 
 <script>
 const STORAGE_KEY = "ultimate_teams_pages_v6";
-const defaultState = {players: [], pairRules: [], history: {}, currentGame: null, nextId: 1, showInactive: false, selectedWinnerIndex: null};
+const defaultState = {players: [], pairRules: [], history: {}, currentGame: null, nextId: 1, showInactive: false, selectedWinnerIndex: null, weightHandling: 0.35, weightCutting: 0.35, weightDefense: 0.30, kFactor: 0.08, ratingHistory: {}};
 let state = loadState();
 
 function loadState(){
@@ -316,7 +384,7 @@ function presentPlayers(){ return [...state.players].filter(p => p.active && p.a
 function effectiveHandling(player){ const inj = Number(player.injuryPct)||1; return (Number(player.handling)||0) * (0.5 + 0.5*inj); }
 function effectiveCutting(player){ const inj = Number(player.injuryPct)||1; return (Number(player.cutting)||0) * inj; }
 function effectiveDefense(player){ const inj = Number(player.injuryPct)||1; return (Number(player.defense)||0) * inj; }
-function baseOverall(player){ return effectiveHandling(player)*0.35 + effectiveCutting(player)*0.35 + effectiveDefense(player)*0.30; }
+function baseOverall(player){ return effectiveHandling(player)*(Number(state.weightHandling ?? 0.35)) + effectiveCutting(player)*(Number(state.weightCutting ?? 0.35)) + effectiveDefense(player)*(Number(state.weightDefense ?? 0.30)); }
 function overall(player){ return baseOverall(player) + Number(player.winLossRating || 0); }
 function expectedWinProb(teamStrength, oppStrength){
   const SCALE = 4.0;
@@ -666,7 +734,107 @@ function addPairRuleFromMain(){
   const strength = document.getElementById("pairStrengthMain")?.value || null;
   addPairRule(p1, p2, type, strength);
 }
-function renderAll(){ updateStats(); updateSelectOptions(); renderPresentList(); renderPairRules(); updateShowInactiveButton(); renderPlayers(); renderTeams(); syncDataPage(); }
+function syncWeights(){
+  state.weightHandling = Number(document.getElementById("weightHandling")?.value || 0.35);
+  state.weightCutting = Number(document.getElementById("weightCutting")?.value || 0.35);
+  state.weightDefense = Number(document.getElementById("weightDefense")?.value || 0.30);
+  saveState();
+}
+function syncKFactor(){
+  state.kFactor = Number(document.getElementById("kFactorSlider")?.value || 0.08);
+  const lab = document.getElementById("kFactorLabel");
+  if(lab) lab.textContent = state.kFactor.toFixed(2);
+  saveState();
+}
+function ensureHistoryEntry(player){
+  if(!state.ratingHistory[player.id]) state.ratingHistory[player.id] = [];
+  return state.ratingHistory[player.id];
+}
+function recordRatingSnapshot(player){
+  const arr = ensureHistoryEntry(player);
+  arr.push({ts: Date.now(), value: Number(player.winLossRating || 0)});
+  if(arr.length > 50) arr.splice(0, arr.length - 50);
+}
+function openRatingsModal(){
+  const players = [...state.players].sort((a,b)=>overall(b)-overall(a));
+  document.getElementById("ratingsModalContent").innerHTML = players.length ? players.map((p, i) => `<div class="player"><div><div class="player-name">${i+1}. ${p.fullName}</div><div class="small">Overall ${overall(p).toFixed(2)} · Base ${baseOverall(p).toFixed(2)} · W/L ${Number(p.winLossRating||0).toFixed(2)}</div></div><div class="pill">${p.active ? "Active" : "Inactive"}</div></div>`).join("") : '<div class="small">No players.</div>';
+  showModal('ratingsModal');
+}
+function openTrendModal(){
+  const players = [...state.players].map(p => {
+    const arr = state.ratingHistory[p.id] || [];
+    const first = arr.length ? Number(arr[0].value) : 0;
+    const last = arr.length ? Number(arr[arr.length-1].value) : Number(p.winLossRating||0);
+    const delta = last - first;
+    return {name: p.fullName, delta, current: Number(p.winLossRating||0), samples: arr.length};
+  }).sort((a,b)=>b.delta-a.delta);
+  document.getElementById("trendModalContent").innerHTML = players.length ? players.map(p => {
+    const cls = p.delta > 0 ? 'good' : p.delta < 0 ? 'bad' : '';
+    const sign = p.delta > 0 ? '+' : '';
+    return `<div class="player"><div><div class="player-name">${p.name}</div><div class="small ${cls}">${sign}${p.delta.toFixed(2)} change · Current W/L ${p.current.toFixed(2)} · Samples ${p.samples}</div></div></div>`;
+  }).join("") : '<div class="small">No rating history yet.</div>';
+  showModal('trendModal');
+}
+function simulateTeams(){
+  const players = activeAttendingPlayers();
+  const numTeams = Math.max(2, Number((document.getElementById("numTeams") && document.getElementById("numTeams").value) || 2));
+  const repeatWeight = Number((document.getElementById("repeatWeight") && document.getElementById("repeatWeight").value) || 4);
+  if(players.length < numTeams){ alert("Not enough attending players for that many teams."); return; }
+  let best = null;
+  for(let k=0;k<30;k++){
+    const initial = makeInitialTeams(players, numTeams);
+    const candidate = optimizeTeams(initial, repeatWeight);
+    if(!best || candidate.score < best.score) best = candidate;
+  }
+  document.getElementById("simulateModalContent").innerHTML = best.teams.map((team, idx) => {
+    const stats = teamStats(team);
+    return `<div class="teambox" style="margin-bottom:10px"><div class="teamhead"><strong>Team ${idx+1}</strong><span class="small">${stats.overall.toFixed(2)}</span></div>${team.map(p => `<div class="row" style="justify-content:space-between"><span>${p.fullName}</span><span class="small">${overall(p).toFixed(2)}</span></div>`).join('')}</div>`;
+  }).join('');
+  showModal('simulateModal');
+}
+function autoBalanceCheck(){
+  const players = [...state.players].sort((a,b)=>overall(b)-overall(a));
+  const overalls = players.map(p => overall(p));
+  const avg = overalls.length ? overalls.reduce((a,b)=>a+b,0)/overalls.length : 0;
+  const variance = overalls.length ? overalls.reduce((s,v)=>s+Math.pow(v-avg,2),0)/overalls.length : 0;
+  const outliers = players.filter(p => Math.abs(overall(p)-avg) > Math.max(0.75, Math.sqrt(variance)));
+  document.getElementById("balanceModalContent").innerHTML = `
+    <div class="three-col">
+      <div class="teambox"><div class="player-name">Average Overall</div><div class="small">${avg.toFixed(2)}</div></div>
+      <div class="teambox"><div class="player-name">Spread</div><div class="small">${Math.sqrt(variance).toFixed(2)}</div></div>
+      <div class="teambox"><div class="player-name">Outliers</div><div class="small">${outliers.length}</div></div>
+    </div>
+    <div class="hr"></div>
+    ${outliers.length ? outliers.map(p => `<div class="player"><div><div class="player-name">${p.fullName}</div><div class="small">Overall ${overall(p).toFixed(2)} · H ${Number(p.handling||0).toFixed(1)} · C ${Number(p.cutting||0).toFixed(1)} · D ${Number(p.defense||0).toFixed(1)} · W/L ${Number(p.winLossRating||0).toFixed(2)}</div></div><div class="pill warn2">Review</div></div>`).join('') : '<div class="small">No obvious outliers found.</div>'}
+  `;
+  showModal('balanceModal');
+}
+function showModal(id){
+  const el = document.getElementById(id);
+  if(el) el.style.display = 'flex';
+}
+function hideModal(id){
+  const el = document.getElementById(id);
+  if(el) el.style.display = 'none';
+}
+function closeModal(evt, id){
+  if(evt.target && evt.target.id === id) hideModal(id);
+}
+function lockPairFromMain(){
+  const p1 = document.getElementById("pairP1Main")?.value || null;
+  const p2 = document.getElementById("pairP2Main")?.value || null;
+  const strength = document.getElementById("pairStrengthMain")?.value || null;
+  addPairRule(p1, p2, "together", strength);
+}
+function renderAll(){
+  updateStats(); updateSelectOptions(); renderPresentList(); renderPairRules(); updateShowInactiveButton(); renderPlayers(); renderTeams();
+  const wh = document.getElementById("weightHandling"); if(wh) wh.value = Number(state.weightHandling ?? 0.35).toFixed(2);
+  const wc = document.getElementById("weightCutting"); if(wc) wc.value = Number(state.weightCutting ?? 0.35).toFixed(2);
+  const wd = document.getElementById("weightDefense"); if(wd) wd.value = Number(state.weightDefense ?? 0.30).toFixed(2);
+  const ks = document.getElementById("kFactorSlider"); if(ks) ks.value = Number(state.kFactor ?? 0.08).toFixed(2);
+  const kl = document.getElementById("kFactorLabel"); if(kl) kl.textContent = Number(state.kFactor ?? 0.08).toFixed(2);
+  syncDataPage();
+}
 function clearAttendance(){ if(!confirm("Clear Attendance?")) return; state.players.forEach(p => p.attending = false); saveState(); renderAll(); }
 function toggleAttendance(id){ const p = playerById(id); if(!p) return; if(!p.active) p.active = true; p.attending = !p.attending; saveState(); renderAll(); }
 function toggleActive(id){ const p = playerById(id); if(!p) return; p.active = !p.active; if(!p.active) p.attending = false; saveState(); renderAll(); }
@@ -805,14 +973,20 @@ function applyResult(winnerIndex){
     const loserStrength = teamStrength(loserTeam);
     const expectedWinner = expectedWinProb(winnerStrength, loserStrength);
     const expectedLoser = expectedWinProb(loserStrength, winnerStrength);
-    const K = 0.08;
+    const K = Number(state.kFactor ?? 0.08);
     winnerTeam.forEach(p => {
       const player = playerById(p.id);
-      if(player) player.winLossRating = Number(player.winLossRating || 0) + K * (1 - expectedWinner);
+      if(player){
+        player.winLossRating = Number(player.winLossRating || 0) + K * (1 - expectedWinner);
+        recordRatingSnapshot(player);
+      }
     });
     loserTeam.forEach(p => {
       const player = playerById(p.id);
-      if(player) player.winLossRating = Number(player.winLossRating || 0) + K * (0 - expectedLoser);
+      if(player){
+        player.winLossRating = Number(player.winLossRating || 0) + K * (0 - expectedLoser);
+        recordRatingSnapshot(player);
+      }
     });
   });
 
