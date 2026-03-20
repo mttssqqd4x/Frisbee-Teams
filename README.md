@@ -588,3 +588,30 @@ Notes:
 - Show Rating Changes uses saved Win/Loss history snapshots
 - Simulate Teams previews balanced teams without replacing the current game
 - Auto-Balance Check highlights obvious outliers for review
+
+
+## Data Page Improvements In v27
+
+This version improves several of the Data-page tools and result handling.
+
+Changes:
+- K-Factor current value is shown more clearly next to the slider
+- added Show/Hide Inactive, search, and clear controls to:
+  - View Player Ratings
+  - Show Rating Changes
+  - Auto-Balance Check
+- Save Results can only be applied once per generated game
+- Simulated Teams modal now includes a Next Team button to generate another simulated set
+- Auto-Balance Check is more functional:
+  - shows average overall
+  - shows spread
+  - computes an outlier threshold
+  - marks players as high/low outliers when their effective overall is far from the group average
+  - explains what the outlier flag means
+
+How Auto-Balance Check works:
+- it calculates each player's current effective overall
+- computes the average overall for the filtered player set
+- computes the spread of the group
+- flags players whose overall is far enough from the average
+- this helps identify ratings that may deserve review
