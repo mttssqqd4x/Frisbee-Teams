@@ -300,7 +300,7 @@
 
 <script>
 const STORAGE_KEY = "ultimate_teams_pages_v6";
-const defaultState = {players: [], pairRules: [], history: {}, currentGame: null, nextId: 1, showInactive: false, selectedWinnerIndex: null, weightHandling: 0.35, weightCutting: 0.35, weightDefense: 0.30, kFactor: 0.08, ratingHistory: {}, resultsSavedForCurrentGame: false, simulateSeed: 0, ratingsShowInactive: false, trendShowInactive: false, balanceShowInactive: false};
+const defaultState = {players: [], pairRules: [], history: {}, currentGame: null, nextId: 1, showInactive: false, selectedWinnerIndex: null, weightHandling: 0.35, weightCutting: 0.35, weightDefense: 0.30, kFactor: 0.08, ratingHistory: {}, resultsSavedForCurrentGame: false, simulateSeed: 0, simulateHistory: {}, ratingsShowInactive: false, trendShowInactive: false, balanceShowInactive: false};
 let state = loadState();
 
 function loadState(){
@@ -716,11 +716,18 @@ function showPage(page){
 }
 function syncDataPage(){
   const loadEditSrc = document.getElementById("loadEditCard");
-  const pairRulesSrc = document.getElementById("pairRulesCard");
   const loadEditDst = document.getElementById("dataLoadEdit");
-  const pairRulesDst = document.getElementById("dataPairRules");
-  if(loadEditSrc && loadEditDst) loadEditDst.innerHTML = loadEditSrc.innerHTML.replace('style="display:none"','');
-  if(pairRulesSrc && pairRulesDst) pairRulesDst.innerHTML = pairRulesSrc.innerHTML.replace('style="display:none"','');
+  if(loadEditSrc && loadEditDst){
+    let html = loadEditSrc.innerHTML.replace('style="display:none"','');
+    html = html
+      .replace(/id="weightHandling"/g, 'id="weightHandlingData"')
+      .replace(/id="weightCutting"/g, 'id="weightCuttingData"')
+      .replace(/id="weightDefense"/g, 'id="weightDefenseData"')
+      .replace(/id="kFactorSlider"/g, 'id="kFactorData"')
+      .replace(/id="kFactorLabel"/g, 'id="kFactorLabelData"');
+    loadEditDst.innerHTML = html;
+  }
+
   const rwData = document.getElementById("repeatWeightData");
   const rw = document.getElementById("repeatWeight");
   if(rwData && rw) rwData.value = rw.value;
@@ -731,6 +738,37 @@ function syncDataPage(){
   const inactiveData = document.getElementById("inactiveCsvData");
   if(activeHidden && activeData && !activeData.value) activeData.value = activeHidden.value;
   if(inactiveHidden && inactiveData && !inactiveData.value) inactiveData.value = inactiveHidden.value;
+
+  const whd = document.getElementById("weightHandlingData");
+  const wcd = document.getElementById("weightCuttingData");
+  const wdd = document.getElementById("weightDefenseData");
+  const kfd = document.getElementById("kFactorData");
+  const kld = document.getElementById("kFactorLabelData");
+
+  if(whd) whd.value = Number(state.weightHandling ?? 0.35).toFixed(2);
+  if(wcd) wcd.value = Number(state.weightCutting ?? 0.35).toFixed(2);
+  if(wdd) wdd.value = Number(state.weightDefense ?? 0.30).toFixed(2);
+  if(kfd) kfd.value = Number(state.kFactor ?? 0.08).toFixed(2);
+  if(kld) kld.textContent = Number(state.kFactor ?? 0.08).toFixed(2);
+
+  const syncCloneWeights = () => {
+    if(whd) state.weightHandling = Number(whd.value || 0.35);
+    if(wcd) state.weightCutting = Number(wcd.value || 0.35);
+    if(wdd) state.weightDefense = Number(wdd.value || 0.30);
+    if(kfd) state.kFactor = Number(kfd.value || 0.08);
+    const wh = document.getElementById("weightHandling"); if(wh) wh.value = Number(state.weightHandling).toFixed(2);
+    const wc = document.getElementById("weightCutting"); if(wc) wc.value = Number(state.weightCutting).toFixed(2);
+    const wd = document.getElementById("weightDefense"); if(wd) wd.value = Number(state.weightDefense).toFixed(2);
+    const ks = document.getElementById("kFactorSlider"); if(ks) ks.value = Number(state.kFactor).toFixed(2);
+    const kl = document.getElementById("kFactorLabel"); if(kl) kl.textContent = Number(state.kFactor).toFixed(2);
+    if(kld) kld.textContent = Number(state.kFactor).toFixed(2);
+    saveState();
+  };
+
+  if(whd) whd.oninput = syncCloneWeights;
+  if(wcd) wcd.oninput = syncCloneWeights;
+  if(wdd) wdd.oninput = syncCloneWeights;
+  if(kfd) kfd.oninput = syncCloneWeights;
 }
 function addPairRuleFromMain(){
   const p1 = document.getElementById("pairP1Main")?.value || null;
@@ -805,6 +843,23 @@ function openTrendModal(){
   }).join("") : '<div class="small">No players match that filter.</div>';
   showModal('trendModal');
 }
+function mergeHistory(base, extra){
+  const merged = {...base};
+  Object.keys(extra || {}).forEach(k => {
+    merged[k] = (merged[k] || 0) + (extra[k] || 0);
+  });
+  return merged;
+}
+function addTeamsToHistoryMap(teams, historyMap){
+  teams.forEach(team => {
+    for(let i=0;i<team.length;i++){
+      for(let j=i+1;j<team.length;j++){
+        const key = pairKey(team[i].id, team[j].id);
+        historyMap[key] = (historyMap[key] || 0) + 1;
+      }
+    }
+  });
+}
 function renderSimulationFromSeed(seedOffset){
   const players = activeAttendingPlayers();
   const numTeams = Math.max(2, Number((document.getElementById("numTeams") && document.getElementById("numTeams").value) || 2));
@@ -812,11 +867,14 @@ function renderSimulationFromSeed(seedOffset){
   if(players.length < numTeams){ alert("Not enough attending players for that many teams."); return false; }
 
   const originalRandom = Math.random;
-  let seed = (Date.now() + seedOffset * 7919) % 2147483647;
+  const originalHistory = state.history;
+  let seed = (1234567 + seedOffset * 104729) % 2147483647;
   Math.random = function(){
     seed = (seed * 48271) % 2147483647;
     return seed / 2147483647;
   };
+
+  state.history = mergeHistory(originalHistory, state.simulateHistory || {});
 
   let best = null;
   const tries = 60;
@@ -826,16 +884,22 @@ function renderSimulationFromSeed(seedOffset){
     if(!best || candidate.score < best.score) best = candidate;
   }
 
+  state.history = originalHistory;
   Math.random = originalRandom;
 
-  document.getElementById("simulateModalContent").innerHTML = best.teams.map((team, idx) => {
-    const stats = teamStats(team);
-    return `<div class="teambox" style="margin-bottom:10px"><div class="teamhead"><strong>Team ${idx+1}</strong><span class="small">${stats.overall.toFixed(2)}</span></div>${team.map(p => `<div class="row" style="justify-content:space-between"><span>${p.fullName}</span><span class="small">${overall(p).toFixed(2)}</span></div>`).join('')}</div>`;
-  }).join('');
-  return true;
+  if(best){
+    addTeamsToHistoryMap(best.teams, state.simulateHistory);
+    document.getElementById("simulateModalContent").innerHTML = best.teams.map((team, idx) => {
+      const stats = teamStats(team);
+      return `<div class="teambox" style="margin-bottom:10px"><div class="teamhead"><strong>Team ${idx+1}</strong><span class="small">${stats.overall.toFixed(2)}</span></div>${team.map(p => `<div class="row" style="justify-content:space-between"><span>${p.fullName}</span><span class="small">${overall(p).toFixed(2)}</span></div>`).join('')}</div>`;
+    }).join('');
+    return true;
+  }
+  return false;
 }
 function simulateTeams(){
-  state.simulateSeed = (state.simulateSeed || 0) + 1;
+  state.simulateHistory = {};
+  state.simulateSeed = 1;
   if(renderSimulationFromSeed(state.simulateSeed)) showModal('simulateModal');
 }
 function nextSimulatedTeams(){
@@ -875,6 +939,10 @@ function showModal(id){
 function hideModal(id){
   const el = document.getElementById(id);
   if(el) el.style.display = 'none';
+  if(id === 'simulateModal'){
+    state.simulateHistory = {};
+    state.simulateSeed = 0;
+  }
 }
 function closeModal(evt, id){
   if(evt.target && evt.target.id === id) hideModal(id);
@@ -1029,30 +1097,39 @@ function generateGame(){
 }
 function applyResult(winnerIndex){
   if(!state.currentGame) return;
-  const winnerIds = new Set(state.currentGame.teams[winnerIndex].map(p => p.id));
+
+  const winnerTeam = state.currentGame.teams[winnerIndex];
+  const numOpponents = Math.max(1, state.currentGame.teams.length - 1);
 
   state.currentGame.teams.forEach((team, idx) => {
     if(idx === winnerIndex) return;
-    const winnerTeam = state.currentGame.teams[winnerIndex];
     const loserTeam = team;
     const winnerStrength = teamStrength(winnerTeam);
     const loserStrength = teamStrength(loserTeam);
     const expectedWinner = expectedWinProb(winnerStrength, loserStrength);
     const expectedLoser = expectedWinProb(loserStrength, winnerStrength);
     const K = Number(state.kFactor ?? 0.08);
+    const scaledK = K / numOpponents;
+
     winnerTeam.forEach(p => {
       const player = playerById(p.id);
       if(player){
-        player.winLossRating = Number(player.winLossRating || 0) + K * (1 - expectedWinner);
-        recordRatingSnapshot(player);
+        player.winLossRating = Number(player.winLossRating || 0) + scaledK * (1 - expectedWinner);
       }
     });
     loserTeam.forEach(p => {
       const player = playerById(p.id);
       if(player){
-        player.winLossRating = Number(player.winLossRating || 0) + K * (0 - expectedLoser);
-        recordRatingSnapshot(player);
+        player.winLossRating = Number(player.winLossRating || 0) + scaledK * (0 - expectedLoser);
       }
+    });
+  });
+
+  // Record exactly one rating snapshot per player per saved game.
+  state.currentGame.teams.forEach(team => {
+    team.forEach(p => {
+      const player = playerById(p.id);
+      if(player) recordRatingSnapshot(player);
     });
   });
 

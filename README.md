@@ -631,3 +631,37 @@ Why sample counts were different:
 - that meant sample counts could differ even if players had played the same number of games
 
 This version reduces that mismatch by creating starting snapshots for imported and newly added players and backfilling missing histories.
+
+
+## Fixes In v29
+
+This version fixes three issues:
+
+### 1. K-Factor display
+The visible Data-page K-Factor field and label now sync properly with the underlying stored value.
+Previously, the visible cloned Data-page field could drift from the hidden source controls.
+
+### 2. Simulate Teams → Next Team
+Next Team now keeps its own temporary teammate-history map while the Simulate Teams modal is open.
+That means each new simulated set avoids repeating the previous simulated teammate pairs.
+When the modal is closed, that temporary simulation history is cleared.
+
+### 3. Rating Changes sample counts
+The old code was recording Win/Loss history snapshots inside each winner-vs-loser comparison.
+In games with more than 2 teams, winners could get multiple snapshots in one saved result.
+That is why, after the same number of games, some players showed 11 samples while others showed 6–10.
+
+Now the app records exactly one rating-history snapshot per player per saved game.
+So sample counts should now line up much more closely with games actually recorded.
+
+
+## Multi-Team Elo Scaling In v30
+
+This version changes multi-team win/loss updates so they scale by the number of opponents.
+
+How it works now:
+- in a 2-team game: full K applies
+- in a 3-team game: each winner-vs-loser update uses K / 2
+- in a 4-team game: each winner-vs-loser update uses K / 3
+
+This keeps the total rating movement from inflating just because more teams are in the game.
