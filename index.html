@@ -125,6 +125,10 @@
             <button class="btn-secondary" onclick="simulateTeams()">Simulate Teams</button>
             <button class="btn-secondary" onclick="autoBalanceCheck()">Auto-Balance Check</button>
           </div>
+          <div class="toolbar" style="margin-bottom:10px">
+            <button class="btn-danger" onclick="openDeletePlayerModal()">Delete Player</button>
+            <span></span>
+          </div>
           <label>Backup / Restore</label>
           <div class="toolbar">
             <button class="btn-secondary" onclick="downloadState()">Export Backup JSON</button>
@@ -287,6 +291,18 @@
       <button class="btn-secondary" style="width:auto" onclick="hideModal('balanceModal')">Close</button>
     </div>
     <div class="toolbar-3" style="margin-top:10px"><input id="balanceSearch" placeholder="Search players..." oninput="autoBalanceCheck()"><button class="btn-secondary" onclick="toggleModalInactive('balance')">Show Inactive</button><button class="btn-secondary" style="width:auto" onclick="clearModalSearch('balanceSearch'); autoBalanceCheck()">Clear</button></div><div id="balanceModalContent" style="margin-top:10px"></div>
+  </div>
+</div>
+
+<div id="deletePlayerModal" class="modal-backdrop" onclick="closeModal(event, 'deletePlayerModal')">
+  <div class="modal-card" onclick="event.stopPropagation()">
+    <div class="row" style="justify-content:space-between;align-items:center">
+      <h2 style="margin:0">Delete Player</h2>
+      <button class="btn-secondary" style="width:auto" onclick="hideModal('deletePlayerModal')">Close</button>
+    </div>
+    <div class="small" style="margin-top:10px">Only inactive players are shown here. Deleting a player permanently removes them and their related history.</div>
+    <div class="toolbar-3" style="margin-top:10px"><input id="deletePlayerSearch" placeholder="Search inactive players..." oninput="openDeletePlayerModal()"><span></span><button class="btn-secondary" style="width:auto" onclick="clearModalSearch('deletePlayerSearch'); openDeletePlayerModal()">Clear</button></div>
+    <div id="deletePlayerModalContent" style="margin-top:10px"></div>
   </div>
 </div>
 
@@ -795,6 +811,28 @@ function modalFilterPlayers(which){
   return [...state.players]
     .filter(p => showInactive || p.active)
     .filter(p => !search || p.fullName.toLowerCase().includes(search));
+}
+function openDeletePlayerModal(){
+  const search = (document.getElementById("deletePlayerSearch")?.value || "").trim().toLowerCase();
+  const inactivePlayers = [...state.players]
+    .filter(p => !p.active)
+    .filter(p => !search || p.fullName.toLowerCase().includes(search))
+    .sort((a,b) => a.fullName.localeCompare(b.fullName));
+
+  const html = inactivePlayers.length
+    ? inactivePlayers.map(p => `<div class="player"><div><div class="player-name">${p.fullName}</div><div class="small">Inactive · W/L ${Number(p.winLossRating || 0).toFixed(2)}</div></div><div class="toggle-wrap"><button class="btn-danger" onclick="confirmDeletePlayer(${p.id})">Delete</button></div></div>`).join("")
+    : '<div class="small">No inactive players match that search.</div>';
+
+  document.getElementById("deletePlayerModalContent").innerHTML = html;
+  showModal('deletePlayerModal');
+}
+function confirmDeletePlayer(id){
+  const player = playerById(id);
+  if(!player) return;
+  const ok = confirm(`Delete player permanently?\n\n${player.fullName}\n\nThis cannot be undone from the app.`);
+  if(!ok) return;
+  removePlayer(id);
+  openDeletePlayerModal();
 }
 function syncWeights(){
   state.weightHandling = Number(document.getElementById("weightHandling")?.value || 0.35);

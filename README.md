@@ -681,3 +681,15 @@ Changes:
   - Locked Apart
 - locked pair rules do not show strength
 - regular non-locked pair rules still show their strength
+
+
+## Delete Player Tool In v33
+
+This version adds a dedicated **Delete Player** button on the Data page.
+
+How it works:
+- opens a modal showing only inactive players
+- includes search and clear controls
+- each listed inactive player has a Delete button
+- deleting asks for an additional confirmation popup
+- deleting permanently removes the player and their related history from the app
