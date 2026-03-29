@@ -693,3 +693,15 @@ How it works:
 - each listed inactive player has a Delete button
 - deleting asks for an additional confirmation popup
 - deleting permanently removes the player and their related history from the app
+
+
+## Import Fix In v34
+
+This version fixes CSV imports when the Win/Loss column is omitted.
+
+New behavior:
+- if the CSV includes Win/Loss, the import uses that value
+- if the CSV does not include Win/Loss, existing stored Win/Loss ratings are preserved
+- for brand new players imported without Win/Loss, the app defaults Win/Loss to 0.00
+
+This prevents imports without a Win/Loss column from accidentally clearing existing Win/Loss ratings.
