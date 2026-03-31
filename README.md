@@ -705,3 +705,15 @@ New behavior:
 - for brand new players imported without Win/Loss, the app defaults Win/Loss to 0.00
 
 This prevents imports without a Win/Loss column from accidentally clearing existing Win/Loss ratings.
+
+
+## Handler Separation And UI Changes In v35
+
+This version adds a Data-page toggle and boost value for handler separation.
+
+Changes:
+- added **Prioritize Handler Separation** toggle on the Data page
+- added **Handler Separation Boost** value
+- when enabled, the handling-spread penalty in team scoring is increased by the boost factor
+- removed the popup after **Save Teams + Next Game**
+- **Load Or Edit Players** is now expanded by default

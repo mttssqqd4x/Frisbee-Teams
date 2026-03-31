@@ -86,7 +86,7 @@
   </div>
 
   <div class="card" id="loadEditCard" style="display:none">
-    <details id="section-load-edit">
+    <details id="section-load-edit" open>
       <summary><span class="summary-title">Load Or Edit Players</span><span></span></summary>
       <div class="notice" style="margin-top:10px">Paste CSV with columns: First Name, Last Name, Handling, Cutting, Defense, Win/Loss. Optional extra column allowed: Combined.</div>
       <div class="grid grid-2" style="margin-top:10px">
@@ -116,6 +116,16 @@
           <div style="margin-bottom:10px">
             <label>K-Factor: <strong id="kFactorLabel">0.08</strong></label>
             <input id="kFactorSlider" type="number" min="0.01" max="0.25" step="0.01" value="0.08" oninput="syncKFactor()">
+          </div>
+          <div class="grid grid-2" style="margin-bottom:10px">
+            <div>
+              <label>Prioritize Handler Separation</label>
+              <button id="handlerSeparationBtn" class="btn-secondary" onclick="toggleHandlerSeparation()">Off</button>
+            </div>
+            <div>
+              <label>Handler Separation Boost <span class="muted-inline">(1.0–5.0)</span></label>
+              <input id="handlerSeparationBoost" type="number" min="1.0" max="5.0" step="0.5" value="2.0" oninput="syncHandlerSeparationBoost()">
+            </div>
           </div>
           <div class="toolbar" style="margin-bottom:10px">
             <button class="btn-secondary" onclick="openRatingsModal()">View Player Ratings</button>
@@ -313,7 +323,7 @@
 
 <script>
 const STORAGE_KEY = "ultimate_teams_pages_v6";
-const defaultState = {players: [], pairRules: [], history: {}, currentGame: null, nextId: 1, showInactive: false, selectedWinnerIndex: null, weightHandling: 0.35, weightCutting: 0.35, weightDefense: 0.30, kFactor: 0.08, ratingHistory: {}, resultsSavedForCurrentGame: false, simulateSeed: 0, simulateHistory: {}, ratingsShowInactive: false, trendShowInactive: false, balanceShowInactive: false};
+const defaultState = {players: [], pairRules: [], history: {}, currentGame: null, nextId: 1, showInactive: false, selectedWinnerIndex: null, weightHandling: 0.35, weightCutting: 0.35, weightDefense: 0.30, kFactor: 0.08, ratingHistory: {}, resultsSavedForCurrentGame: false, simulateSeed: 0, simulateHistory: {}, ratingsShowInactive: false, trendShowInactive: false, balanceShowInactive: false, prioritizeHandlerSeparation: false, handlerSeparationBoost: 2.0};
 let state = loadState();
 
 function loadState(){
@@ -758,23 +768,33 @@ function syncDataPage(){
   const wdd = document.getElementById("weightDefenseData");
   const kfd = document.getElementById("kFactorData");
   const kld = document.getElementById("kFactorLabelData");
+  const hsbd = document.getElementById("handlerSeparationBoostData");
+  const hsbtn = document.getElementById("handlerSeparationBtnData");
 
   if(whd) whd.value = Number(state.weightHandling ?? 0.35).toFixed(2);
   if(wcd) wcd.value = Number(state.weightCutting ?? 0.35).toFixed(2);
   if(wdd) wdd.value = Number(state.weightDefense ?? 0.30).toFixed(2);
   if(kfd) kfd.value = Number(state.kFactor ?? 0.08).toFixed(2);
   if(kld) kld.textContent = Number(state.kFactor ?? 0.08).toFixed(2);
+  if(hsbd) hsbd.value = Number(state.handlerSeparationBoost ?? 2.0).toFixed(1);
+  if(hsbtn){
+    hsbtn.textContent = state.prioritizeHandlerSeparation ? "On" : "Off";
+    hsbtn.className = state.prioritizeHandlerSeparation ? "btn" : "btn-secondary";
+  }
 
   const syncCloneWeights = () => {
     if(whd) state.weightHandling = Number(whd.value || 0.35);
     if(wcd) state.weightCutting = Number(wcd.value || 0.35);
     if(wdd) state.weightDefense = Number(wdd.value || 0.30);
     if(kfd) state.kFactor = Number(kfd.value || 0.08);
+    if(hsbd) state.handlerSeparationBoost = Number(hsbd.value || 2.0);
     const wh = document.getElementById("weightHandling"); if(wh) wh.value = Number(state.weightHandling).toFixed(2);
     const wc = document.getElementById("weightCutting"); if(wc) wc.value = Number(state.weightCutting).toFixed(2);
     const wd = document.getElementById("weightDefense"); if(wd) wd.value = Number(state.weightDefense).toFixed(2);
     const ks = document.getElementById("kFactorSlider"); if(ks) ks.value = Number(state.kFactor).toFixed(2);
     const kl = document.getElementById("kFactorLabel"); if(kl) kl.textContent = Number(state.kFactor).toFixed(2);
+    const hsb = document.getElementById("handlerSeparationBoost"); if(hsb) hsb.value = Number(state.handlerSeparationBoost).toFixed(1);
+    const hbtn = document.getElementById("handlerSeparationBtn"); if(hbtn){ hbtn.textContent = state.prioritizeHandlerSeparation ? "On" : "Off"; hbtn.className = state.prioritizeHandlerSeparation ? "btn" : "btn-secondary"; }
     if(kld) kld.textContent = Number(state.kFactor).toFixed(2);
     saveState();
   };
@@ -783,6 +803,8 @@ function syncDataPage(){
   if(wcd) wcd.oninput = syncCloneWeights;
   if(wdd) wdd.oninput = syncCloneWeights;
   if(kfd) kfd.oninput = syncCloneWeights;
+  if(hsbd) hsbd.oninput = syncCloneWeights;
+  if(hsbtn) hsbtn.onclick = () => { state.prioritizeHandlerSeparation = !state.prioritizeHandlerSeparation; syncCloneWeights(); syncDataPage(); };
 }
 function addPairRuleFromMain(){
   const p1 = document.getElementById("pairP1Main")?.value || null;
@@ -833,6 +855,15 @@ function confirmDeletePlayer(id){
   if(!ok) return;
   removePlayer(id);
   openDeletePlayerModal();
+}
+function toggleHandlerSeparation(){
+  state.prioritizeHandlerSeparation = !state.prioritizeHandlerSeparation;
+  saveState();
+  renderAll();
+}
+function syncHandlerSeparationBoost(){
+  state.handlerSeparationBoost = Number(document.getElementById("handlerSeparationBoost")?.value || 2.0);
+  saveState();
 }
 function syncWeights(){
   state.weightHandling = Number(document.getElementById("weightHandling")?.value || 0.35);
@@ -1001,6 +1032,8 @@ function renderAll(){
   const wd = document.getElementById("weightDefense"); if(wd) wd.value = Number(state.weightDefense ?? 0.30).toFixed(2);
   const ks = document.getElementById("kFactorSlider"); if(ks) ks.value = Number(state.kFactor ?? 0.08).toFixed(2);
   const kl = document.getElementById("kFactorLabel"); if(kl) kl.textContent = Number(state.kFactor ?? 0.08).toFixed(2);
+  const hsb = document.getElementById("handlerSeparationBoost"); if(hsb) hsb.value = Number(state.handlerSeparationBoost ?? 2.0).toFixed(1);
+  const hbtn = document.getElementById("handlerSeparationBtn"); if(hbtn){ hbtn.textContent = state.prioritizeHandlerSeparation ? "On" : "Off"; hbtn.className = state.prioritizeHandlerSeparation ? "btn" : "btn-secondary"; }
   syncDataPage();
 }
 function clearAttendance(){ if(!confirm("Clear Attendance?")) return; state.players.forEach(p => p.attending = false); saveState(); renderAll(); }
@@ -1053,9 +1086,10 @@ function teamStrength(team){ return team.reduce((s,p)=>s+overall(p),0); }
 function spread(values){ const mean = values.reduce((a,b)=>a+b,0) / values.length; return values.reduce((s,v)=>s + Math.pow(v - mean, 2), 0); }
 function scoreTeams(teams, repeatWeight){
   const stats = teams.map(teamStats); let score = 0;
+  const handlerPenalty = state.prioritizeHandlerSeparation ? (5 * Number(state.handlerSeparationBoost || 2.0)) : 5;
   score += spread(stats.map(s=>s.count))*120;
   score += spread(stats.map(s=>s.overall))*14;
-  score += spread(stats.map(s=>s.handling))*5;
+  score += spread(stats.map(s=>s.handling))*handlerPenalty;
   score += spread(stats.map(s=>s.cutting))*5;
   score += spread(stats.map(s=>s.defense))*5;
   const teamOf = {}; teams.forEach((team, ti) => team.forEach(p => teamOf[p.id] = ti));
@@ -1208,7 +1242,6 @@ function saveCurrentGame(){
   renderAll();
   generateGame();
   openCurrentGameAndScrollTop();
-  alert("Saved history and generated next game.");
 }
 function initializeApp(){
   renderAll();
