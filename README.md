@@ -717,3 +717,77 @@ Changes:
 - when enabled, the handling-spread penalty in team scoring is increased by the boost factor
 - removed the popup after **Save Teams + Next Game**
 - **Load Or Edit Players** is now expanded by default
+
+
+## Elite Player Balance And Handler Boost Fix In v36
+
+This version fixes the Handler Separation Boost control and adds a second balancing option for top-end players.
+
+Changes:
+- fixed the Data-page Handler Separation Boost control so it syncs properly
+- added **Prioritize Elite Player Balance** toggle
+- added **Elite Balance Boost** value
+
+How Elite Player Balance works:
+- increases the penalty when the teams' top player ratings are spread too unevenly
+- also gives some allowance for teams without the top-end player if they compensate with stronger defense
+- this is intended to better handle cases where one team has a star player and the others should get either similar star power or better defense
+
+
+## Team Generator Rewrite In v37
+
+This version rewrites the team generator from scratch.
+
+### New generator structure
+Instead of relying mainly on a random start plus penalties, the new builder uses a structured three-stage approach:
+
+1. **Top-player seeding**
+   - distributes top overall players one per team first
+
+2. **Top-handler distribution**
+   - then distributes strong handlers to teams with the lowest current handling totals
+
+3. **Greedy fill + local optimization**
+   - fills the rest of the roster by choosing the best current structural fit
+   - then runs swaps and moves to improve the final score
+
+### Why this is stronger
+This approach is better for rosters where:
+- handler skill is clustered in a few players
+- star players can swing games
+- overall balance alone is not enough
+
+### Additional fix
+This version also fixes the Data-page **Handler Separation Boost** control so it syncs properly.
+
+
+## Edit Player Tool And Boost Fix In v38
+
+This version replaces the Delete Player tool with a full Edit Player tool.
+
+Changes:
+- Data page button is now **Edit Player**
+- you can search all players
+- select a player
+- edit:
+  - first name
+  - last name
+  - handling
+  - cutting
+  - defense
+  - win/loss
+- you can also delete the selected player with confirmation
+
+It also fixes the Data-page boost controls:
+- Handler Separation Boost now stays wired up correctly
+- Elite Balance Boost now stays wired up correctly
+
+### How the balancing toggles work
+
+**Prioritize Handler Separation**
+- increases the penalty for uneven handling totals across teams
+- higher boost = stronger push to spread handlers more evenly
+
+**Prioritize Elite Player Balance**
+- increases the penalty when the teams' top player ratings are distributed too unevenly
+- also gives some credit to teams that compensate weaker top-end talent with stronger defense
