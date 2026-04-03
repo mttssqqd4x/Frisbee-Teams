@@ -791,3 +791,24 @@ It also fixes the Data-page boost controls:
 **Prioritize Elite Player Balance**
 - increases the penalty when the teams' top player ratings are distributed too unevenly
 - also gives some credit to teams that compensate weaker top-end talent with stronger defense
+
+
+## Edit Player Tool And Boost Fix In v39
+
+This version fixes the Data-page boost controls and replaces Delete Player with Edit Player.
+
+Changes:
+- Data page button is now **Edit Player**
+- search and select any player
+- edit:
+  - first name
+  - last name
+  - handling
+  - cutting
+  - defense
+  - win/loss
+- delete the selected player with confirmation
+
+It also fixes:
+- Handler Separation Boost now updates properly
+- Elite Balance Boost now updates properly
