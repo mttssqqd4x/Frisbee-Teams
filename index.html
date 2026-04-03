@@ -127,6 +127,16 @@
               <input id="handlerSeparationBoost" type="number" min="1.0" max="5.0" step="0.5" value="2.0" oninput="syncHandlerSeparationBoost()">
             </div>
           </div>
+          <div class="grid grid-2" style="margin-bottom:10px">
+            <div>
+              <label>Prioritize Elite Player Balance</label>
+              <button id="eliteBalanceBtn" class="btn-secondary" onclick="toggleEliteBalance()">Off</button>
+            </div>
+            <div>
+              <label>Elite Balance Boost <span class="muted-inline">(1.0–5.0)</span></label>
+              <input id="eliteBalanceBoost" type="number" min="1.0" max="5.0" step="0.5" value="2.0" oninput="syncEliteBalanceBoost()">
+            </div>
+          </div>
           <div class="toolbar" style="margin-bottom:10px">
             <button class="btn-secondary" onclick="openRatingsModal()">View Player Ratings</button>
             <button class="btn-secondary" onclick="openTrendModal()">Show Rating Changes</button>
@@ -323,7 +333,7 @@
 
 <script>
 const STORAGE_KEY = "ultimate_teams_pages_v6";
-const defaultState = {players: [], pairRules: [], history: {}, currentGame: null, nextId: 1, showInactive: false, selectedWinnerIndex: null, weightHandling: 0.35, weightCutting: 0.35, weightDefense: 0.30, kFactor: 0.08, ratingHistory: {}, resultsSavedForCurrentGame: false, simulateSeed: 0, simulateHistory: {}, ratingsShowInactive: false, trendShowInactive: false, balanceShowInactive: false, prioritizeHandlerSeparation: false, handlerSeparationBoost: 2.0};
+const defaultState = {players: [], pairRules: [], history: {}, currentGame: null, nextId: 1, showInactive: false, selectedWinnerIndex: null, weightHandling: 0.35, weightCutting: 0.35, weightDefense: 0.30, kFactor: 0.08, ratingHistory: {}, resultsSavedForCurrentGame: false, simulateSeed: 0, simulateHistory: {}, ratingsShowInactive: false, trendShowInactive: false, balanceShowInactive: false, prioritizeHandlerSeparation: false, handlerSeparationBoost: 2.0, prioritizeEliteBalance: false, eliteBalanceBoost: 2.0};
 let state = loadState();
 
 function loadState(){
@@ -770,6 +780,8 @@ function syncDataPage(){
   const kld = document.getElementById("kFactorLabelData");
   const hsbd = document.getElementById("handlerSeparationBoostData");
   const hsbtn = document.getElementById("handlerSeparationBtnData");
+  const ebd = document.getElementById("eliteBalanceBoostData");
+  const ebtn = document.getElementById("eliteBalanceBtnData");
 
   if(whd) whd.value = Number(state.weightHandling ?? 0.35).toFixed(2);
   if(wcd) wcd.value = Number(state.weightCutting ?? 0.35).toFixed(2);
@@ -781,6 +793,11 @@ function syncDataPage(){
     hsbtn.textContent = state.prioritizeHandlerSeparation ? "On" : "Off";
     hsbtn.className = state.prioritizeHandlerSeparation ? "btn" : "btn-secondary";
   }
+  if(ebd) ebd.value = Number(state.eliteBalanceBoost ?? 2.0).toFixed(1);
+  if(ebtn){
+    ebtn.textContent = state.prioritizeEliteBalance ? "On" : "Off";
+    ebtn.className = state.prioritizeEliteBalance ? "btn" : "btn-secondary";
+  }
 
   const syncCloneWeights = () => {
     if(whd) state.weightHandling = Number(whd.value || 0.35);
@@ -788,6 +805,7 @@ function syncDataPage(){
     if(wdd) state.weightDefense = Number(wdd.value || 0.30);
     if(kfd) state.kFactor = Number(kfd.value || 0.08);
     if(hsbd) state.handlerSeparationBoost = Number(hsbd.value || 2.0);
+    if(ebd) state.eliteBalanceBoost = Number(ebd.value || 2.0);
     const wh = document.getElementById("weightHandling"); if(wh) wh.value = Number(state.weightHandling).toFixed(2);
     const wc = document.getElementById("weightCutting"); if(wc) wc.value = Number(state.weightCutting).toFixed(2);
     const wd = document.getElementById("weightDefense"); if(wd) wd.value = Number(state.weightDefense).toFixed(2);
@@ -795,6 +813,8 @@ function syncDataPage(){
     const kl = document.getElementById("kFactorLabel"); if(kl) kl.textContent = Number(state.kFactor).toFixed(2);
     const hsb = document.getElementById("handlerSeparationBoost"); if(hsb) hsb.value = Number(state.handlerSeparationBoost).toFixed(1);
     const hbtn = document.getElementById("handlerSeparationBtn"); if(hbtn){ hbtn.textContent = state.prioritizeHandlerSeparation ? "On" : "Off"; hbtn.className = state.prioritizeHandlerSeparation ? "btn" : "btn-secondary"; }
+    const eb = document.getElementById("eliteBalanceBoost"); if(eb) eb.value = Number(state.eliteBalanceBoost).toFixed(1);
+    const ebtnMain = document.getElementById("eliteBalanceBtn"); if(ebtnMain){ ebtnMain.textContent = state.prioritizeEliteBalance ? "On" : "Off"; ebtnMain.className = state.prioritizeEliteBalance ? "btn" : "btn-secondary"; }
     if(kld) kld.textContent = Number(state.kFactor).toFixed(2);
     saveState();
   };
@@ -804,7 +824,9 @@ function syncDataPage(){
   if(wdd) wdd.oninput = syncCloneWeights;
   if(kfd) kfd.oninput = syncCloneWeights;
   if(hsbd) hsbd.oninput = syncCloneWeights;
+  if(ebd) ebd.oninput = syncCloneWeights;
   if(hsbtn) hsbtn.onclick = () => { state.prioritizeHandlerSeparation = !state.prioritizeHandlerSeparation; syncCloneWeights(); syncDataPage(); };
+  if(ebtn) ebtn.onclick = () => { state.prioritizeEliteBalance = !state.prioritizeEliteBalance; syncCloneWeights(); syncDataPage(); };
 }
 function addPairRuleFromMain(){
   const p1 = document.getElementById("pairP1Main")?.value || null;
@@ -855,6 +877,15 @@ function confirmDeletePlayer(id){
   if(!ok) return;
   removePlayer(id);
   openDeletePlayerModal();
+}
+function toggleEliteBalance(){
+  state.prioritizeEliteBalance = !state.prioritizeEliteBalance;
+  saveState();
+  renderAll();
+}
+function syncEliteBalanceBoost(){
+  state.eliteBalanceBoost = Number(document.getElementById("eliteBalanceBoost")?.value || 2.0);
+  saveState();
 }
 function toggleHandlerSeparation(){
   state.prioritizeHandlerSeparation = !state.prioritizeHandlerSeparation;
@@ -1034,6 +1065,8 @@ function renderAll(){
   const kl = document.getElementById("kFactorLabel"); if(kl) kl.textContent = Number(state.kFactor ?? 0.08).toFixed(2);
   const hsb = document.getElementById("handlerSeparationBoost"); if(hsb) hsb.value = Number(state.handlerSeparationBoost ?? 2.0).toFixed(1);
   const hbtn = document.getElementById("handlerSeparationBtn"); if(hbtn){ hbtn.textContent = state.prioritizeHandlerSeparation ? "On" : "Off"; hbtn.className = state.prioritizeHandlerSeparation ? "btn" : "btn-secondary"; }
+  const eb = document.getElementById("eliteBalanceBoost"); if(eb) eb.value = Number(state.eliteBalanceBoost ?? 2.0).toFixed(1);
+  const ebtn = document.getElementById("eliteBalanceBtn"); if(ebtn){ ebtn.textContent = state.prioritizeEliteBalance ? "On" : "Off"; ebtn.className = state.prioritizeEliteBalance ? "btn" : "btn-secondary"; }
   syncDataPage();
 }
 function clearAttendance(){ if(!confirm("Clear Attendance?")) return; state.players.forEach(p => p.attending = false); saveState(); renderAll(); }
@@ -1092,6 +1125,25 @@ function scoreTeams(teams, repeatWeight){
   score += spread(stats.map(s=>s.handling))*handlerPenalty;
   score += spread(stats.map(s=>s.cutting))*5;
   score += spread(stats.map(s=>s.defense))*5;
+
+  if(state.prioritizeEliteBalance){
+    const eliteBoost = Number(state.eliteBalanceBoost || 2.0);
+    const topOveralls = teams.map(team => Math.max(...team.map(p => overall(p))));
+    const defenseTotals = stats.map(s => s.defense);
+    const maxTop = Math.max(...topOveralls);
+    const avgDefense = defenseTotals.reduce((a,b)=>a+b,0) / Math.max(1, defenseTotals.length);
+
+    // Push top-end players to be distributed more evenly.
+    score += spread(topOveralls) * (10 * eliteBoost);
+
+    // If a team has less top-end talent, allow stronger defense to offset some of that gap.
+    teams.forEach((team, idx) => {
+      const topGap = maxTop - topOveralls[idx];
+      const defenseSurplus = Math.max(0, defenseTotals[idx] - avgDefense);
+      const unmetGap = Math.max(0, topGap - (defenseSurplus * 0.5));
+      score += unmetGap * (4 * eliteBoost);
+    });
+  }
   const teamOf = {}; teams.forEach((team, ti) => team.forEach(p => teamOf[p.id] = ti));
   state.pairRules.forEach(rule => {
     const same = teamOf[rule.player1Id] === teamOf[rule.player2Id];
